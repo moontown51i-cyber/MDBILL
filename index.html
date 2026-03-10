@@ -3,140 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced ERP - Billing & Quotation</title>
+    <title>Professional ERP - GST Billing & Quotation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
-        @media print { .no-print { display: none !important; } }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; margin: 0; }
+            .bill-paper { box-shadow: none !important; border: 1px solid #ccc !important; width: 100% !important; margin: 0 !important; }
+        }
+        .bill-paper { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; min-height: 297mm; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-2 md:p-6 font-sans">
+<body class="bg-gray-200 p-2 md:p-6">
 
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-4">
+    <!-- Sidebar Input Section (No Print) -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        <!-- Sidebar: Settings (No Print) -->
         <div class="lg:col-span-1 space-y-4 no-print">
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-blue-600">
-                <h3 class="font-bold mb-3">🏢 Shop / My Details</h3>
-                <input id="shopName" type="text" placeholder="Shop Name" class="w-full border p-2 mb-2 rounded text-sm" oninput="saveData()">
-                <textarea id="shopAddr" placeholder="Full Address" class="w-full border p-2 mb-2 rounded text-sm h-20" oninput="saveData()"></textarea>
-                <input id="shopGST" type="text" placeholder="My GSTIN" class="w-full border p-2 rounded text-sm" oninput="saveData()">
-            </div>
-
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-green-600">
-                <h3 class="font-bold mb-3">📑 Document Type</h3>
-                <select id="docType" class="w-full border p-2 rounded font-bold text-blue-700" onchange="updateUI()">
+            <div class="bg-slate-800 text-white p-4 rounded-lg shadow-lg">
+                <h3 class="font-bold border-b border-slate-600 mb-3 pb-2 text-blue-400">Step 1: Document Type</h3>
+                <select id="docType" class="w-full p-2 rounded bg-slate-700 text-white outline-none font-bold" onchange="updateView()">
                     <option value="RETAIL INVOICE">Retail Invoice</option>
                     <option value="QUOTATION">Quotation</option>
                     <option value="PURCHASE ORDER">Purchase Order</option>
                 </select>
             </div>
-            
-            <div class="bg-white p-4 rounded-lg shadow border-t-4 border-purple-600">
-                <h3 class="font-bold mb-3">👤 Customer / Vendor Details</h3>
-                <input id="custName" type="text" placeholder="Name" class="w-full border p-2 mb-2 rounded text-sm">
-                <input id="custGST" type="text" placeholder="GSTIN (Optional)" class="w-full border p-2 mb-2 rounded text-sm">
-                <input id="custPhone" type="text" placeholder="Mobile / WhatsApp" class="w-full border p-2 mb-2 rounded text-sm">
-                <textarea id="custAddr" placeholder="Address" class="w-full border p-2 rounded text-sm h-16"></textarea>
+
+            <div class="bg-white p-4 rounded-lg shadow-md border-t-4 border-blue-600">
+                <h3 class="font-bold mb-3 text-blue-600 italic">Step 2: My Shop Details</h3>
+                <input id="in_shopName" type="text" placeholder="Shop Name" class="w-full border p-2 mb-2 rounded text-sm" oninput="updateView()">
+                <textarea id="in_shopAddr" placeholder="Shop Address" class="w-full border p-2 mb-2 rounded text-sm h-20" oninput="updateView()"></textarea>
+                <input id="in_shopGST" type="text" placeholder="My GSTIN" class="w-full border p-2 rounded text-sm uppercase" oninput="updateView()">
             </div>
+
+            <div class="bg-white p-4 rounded-lg shadow-md border-t-4 border-green-600">
+                <h3 class="font-bold mb-3 text-green-600 italic">Step 3: Billing To (Customer)</h3>
+                <input id="in_custName" type="text" placeholder="Customer Name" class="w-full border p-2 mb-2 rounded text-sm" oninput="updateView()">
+                <textarea id="in_custAddr" placeholder="Customer Address" class="w-full border p-2 mb-2 rounded text-sm h-20" oninput="updateView()"></textarea>
+                <input id="in_custGST" type="text" placeholder="Customer GSTIN" class="w-full border p-2 mb-2 rounded text-sm uppercase" oninput="updateView()">
+                <input id="in_custPhone" type="text" placeholder="Mobile / WhatsApp" class="w-full border p-2 rounded text-sm" oninput="updateView()">
+            </div>
+            
+            <button onclick="window.print()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-black shadow-xl hover:bg-blue-800 transition uppercase tracking-widest">🖨️ Print / Save Bill</button>
         </div>
 
-        <!-- Main Panel: Item Entry and Preview -->
-        <div class="lg:col-span-3 space-y-4">
-            <div class="bg-white p-6 rounded-lg shadow overflow-hidden">
-                <div class="flex justify-between items-center border-b pb-4 mb-4">
-                    <h2 id="titleHeader" class="text-2xl font-black text-gray-800 uppercase tracking-widest">RETAIL INVOICE</h2>
-                    <div class="text-right text-sm">
-                        <p>Date: <input type="date" id="invDate" class="border p-1 rounded"></p>
-                        <p class="mt-1">No: #<input type="text" id="invNo" placeholder="791" class="border p-1 w-20 rounded"></p>
+        <!-- Bill Display Area -->
+        <div class="lg:col-span-3">
+            <div class="bg-white p-10 bill-paper shadow-2xl mx-auto rounded-sm border border-gray-300 relative">
+                
+                <!-- Invoice Header -->
+                <div class="flex justify-between items-start border-b-2 border-slate-800 pb-6 mb-6">
+                    <div class="w-2/3">
+                        <h1 id="out_shopName" class="text-3xl font-black text-slate-800 uppercase tracking-tighter">YOUR SHOP NAME</h1>
+                        <p id="out_shopAddr" class="text-sm text-slate-600 mt-2 whitespace-pre-wrap leading-tight">Address Details here...</p>
+                        <p class="font-bold text-slate-700 mt-2 text-sm uppercase">GSTIN: <span id="out_shopGST" class="font-mono">XXXXXXXXXXXX</span></p>
                     </div>
-                </div>
-
-                <!-- Item Inputs -->
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6 no-print bg-gray-50 p-3 rounded">
-                    <input id="itemName" type="text" placeholder="Product Description" class="border p-2 rounded col-span-2">
-                    <input id="itemRate" type="number" placeholder="Rate" class="border p-2 rounded">
-                    <input id="itemQty" type="number" placeholder="Qty" class="border p-2 rounded">
-                    <button onclick="addItem()" class="bg-blue-600 text-white font-bold rounded hover:bg-blue-700 uppercase">+ Add</button>
-                </div>
-
-                <!-- Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left border mb-4">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="border p-2">Sr.</th>
-                                <th class="border p-2 w-1/2">Name of Product</th>
-                                <th class="border p-2 text-center">Qty</th>
-                                <th class="border p-2 text-center">Rate</th>
-                                <th class="border p-2 text-center">Taxable</th>
-                                <th class="border p-2 text-center">CGST(9%)</th>
-                                <th class="border p-2 text-center">SGST(9%)</th>
-                                <th class="border p-2 text-right">Total</th>
-                                <th class="border p-2 no-print text-center">❌</th>
-                            </tr>
-                        </thead>
-                        <tbody id="billBody"></tbody>
-                    </table>
-                </div>
-
-                <!-- Summary -->
-                <div class="flex flex-col items-end text-sm space-y-1">
-                    <p>Total Taxable Amount: ₹<span id="taxableTotal">0.00</span></p>
-                    <p>Add CGST (9%): ₹<span id="cgstTotal">0.00</span></p>
-                    <p>Add SGST (9%): ₹<span id="sgstTotal">0.00</span></p>
-                    <div class="text-xl font-bold border-t-2 border-black mt-2 pt-2 text-blue-800">
-                        Total Amount: ₹<span id="grandTotal">0.00</span>
-                    </div>
-                </div>
-
-                <!-- Footer & Buttons -->
-                <div class="mt-10 border-t pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="text-xs italic text-gray-500">
-                        <p><strong>Terms & Conditions:</strong></p>
-                        <p>1. This is a computer generated document.</p>
-                        <p>2. Subject to local jurisdiction.</p>
-                    </div>
-                    <div class="text-center no-print">
-                        <div class="flex gap-2">
-                            <button onclick="window.print()" class="flex-1 bg-slate-800 text-white py-3 rounded font-bold uppercase tracking-wider">🖨️ Print / Save PDF</button>
-                            <button onclick="sendWhatsApp()" class="flex-1 bg-green-600 text-white py-3 rounded font-bold uppercase tracking-wider">💬 WhatsApp Bill</button>
+                    <div class="text-right">
+                        <h2 id="out_docType" class="text-2xl font-black text-slate-400 opacity-50 mb-4">RETAIL INVOICE</h2>
+                        <div class="text-sm font-semibold space-y-1">
+                            <p>Doc No: #<input type="text" value="791" class="w-16 border-b text-right outline-none"></p>
+                            <p>Date: <input type="text" id="out_date" class="w-24 border-b text-right outline-none"></p>
                         </div>
                     </div>
                 </div>
-                <div class="mt-10 text-right print-only hidden">
-                    <div class="inline-block border-t border-black w-48 text-center pt-2">Authorized Signature</div>
+
+                <!-- Customer Details Grid -->
+                <div class="grid grid-cols-2 gap-10 mb-8 border border-slate-100 p-4 bg-slate-50 rounded-lg">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase mb-2 border-b">Billed To (Ship To):</h4>
+                        <p id="out_custName" class="text-lg font-bold text-slate-800">Customer Name</p>
+                        <p id="out_custAddr" class="text-sm text-slate-600 whitespace-pre-wrap leading-tight mt-1">Address Details...</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-slate-500 uppercase mb-2 border-b">Contact Details:</h4>
+                        <p class="text-sm font-bold text-slate-700 mt-1">GSTIN: <span id="out_custGST" class="font-mono uppercase">-</span></p>
+                        <p class="text-sm font-bold text-slate-700 mt-1">Mobile: <span id="out_custPhone">-</span></p>
+                    </div>
                 </div>
+
+                <!-- Entry Row (No Print) -->
+                <div class="no-print grid grid-cols-5 gap-2 mb-6 bg-blue-50 p-3 border-2 border-dashed border-blue-200 rounded">
+                    <input id="item_name" type="text" placeholder="Product Description" class="border p-2 rounded col-span-2 text-sm">
+                    <input id="item_rate" type="number" placeholder="Rate" class="border p-2 rounded text-sm">
+                    <input id="item_qty" type="number" placeholder="Qty" class="border p-2 rounded text-sm">
+                    <button onclick="addItem()" class="bg-blue-600 text-white font-bold p-2 rounded uppercase text-xs">+ Add Item</button>
+                </div>
+
+                <!-- Product Table -->
+                <table class="w-full text-left border-collapse border-2 border-slate-800 mb-6">
+                    <thead class="bg-slate-800 text-white text-xs uppercase">
+                        <tr>
+                            <th class="p-2 border border-slate-700 text-center">Sr.</th>
+                            <th class="p-2 border border-slate-700 w-1/3">Name of Product</th>
+                            <th class="p-2 border border-slate-700 text-center">Qty</th>
+                            <th class="p-2 border border-slate-700 text-center">Rate</th>
+                            <th class="p-2 border border-slate-700 text-center">Taxable</th>
+                            <th class="p-2 border border-slate-700 text-center">CGST (9%)</th>
+                            <th class="p-2 border border-slate-700 text-center">SGST (9%)</th>
+                            <th class="p-2 border border-slate-700 text-right">Total</th>
+                            <th class="p-2 border border-slate-700 text-center no-print">❌</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billBody" class="text-xs">
+                        <!-- Items will be added here -->
+                    </tbody>
+                    <tfoot class="bg-slate-100 font-black text-xs">
+                        <tr>
+                            <td colspan="4" class="p-3 border border-slate-300 text-right uppercase">Total Amount Calculation:</td>
+                            <td id="tot_taxable" class="p-2 border border-slate-300 text-center">0.00</td>
+                            <td id="tot_cgst" class="p-2 border border-slate-300 text-center">0.00</td>
+                            <td id="tot_sgst" class="p-2 border border-slate-300 text-center">0.00</td>
+                            <td id="tot_grand" class="p-2 border border-slate-300 text-right text-sm">₹ 0.00</td>
+                            <td class="no-print border border-slate-300"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Final Calculation & Signature Area -->
+                <div class="flex justify-between items-end mt-20">
+                    <div class="text-[10px] italic text-slate-500 max-w-sm">
+                        <p class="font-bold text-slate-800">Terms & Conditions:</p>
+                        <p>1. Certified that all information is correct and as per norms.</p>
+                        <p>2. Goods once sold will not be taken back.</p>
+                        <p>3. Subject to jurisdiction mentioned in the invoice.</p>
+                    </div>
+                    <div class="text-center w-64 border-t-2 border-slate-800 pt-2">
+                        <p class="text-xs font-bold uppercase mb-12" id="signShopName">FOR YOUR SHOP NAME</p>
+                        <p class="text-[10px] uppercase font-bold tracking-widest">Authorized Signature</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
         let items = [];
-        
-        window.onload = function() {
-            document.getElementById('shopName').value = localStorage.getItem('shopName') || '';
-            document.getElementById('shopAddr').value = localStorage.getItem('shopAddr') || '';
-            document.getElementById('shopGST').value = localStorage.getItem('shopGST') || '';
-            document.getElementById('invDate').valueAsDate = new Date();
-            updateUI();
-        };
+        document.getElementById('out_date').value = new Date().toLocaleDateString();
 
-        function saveData() {
-            localStorage.setItem('shopName', document.getElementById('shopName').value);
-            localStorage.setItem('shopAddr', document.getElementById('shopAddr').value);
-            localStorage.setItem('shopGST', document.getElementById('shopGST').value);
-        }
+        function updateView() {
+            // Document Type
+            document.getElementById('out_docType').innerText = document.getElementById('docType').value;
+            
+            // Shop Data
+            const sName = document.getElementById('in_shopName').value || "Your Shop Name";
+            document.getElementById('out_shopName').innerText = sName;
+            document.getElementById('signShopName').innerText = "FOR, " + sName;
+            document.getElementById('out_shopAddr').innerText = document.getElementById('in_shopAddr').value || "Address Details...";
+            document.getElementById('out_shopGST').innerText = document.getElementById('in_shopGST').value || "XXXXXXXXXXXX";
 
-        function updateUI() {
-            document.getElementById('titleHeader').innerText = document.getElementById('docType').value;
+            // Customer Data
+            document.getElementById('out_custName').innerText = document.getElementById('in_custName').value || "Customer Name";
+            document.getElementById('out_custAddr').innerText = document.getElementById('in_custAddr').value || "Address Details...";
+            document.getElementById('out_custGST').innerText = document.getElementById('in_custGST').value || "-";
+            document.getElementById('out_custPhone').innerText = document.getElementById('in_custPhone').value || "-";
         }
 
         function addItem() {
-            const name = document.getElementById('itemName').value;
-            const rate = parseFloat(document.getElementById('itemRate').value);
-            const qty = parseFloat(document.getElementById('itemQty').value);
+            const name = document.getElementById('item_name').value;
+            const rate = parseFloat(document.getElementById('item_rate').value);
+            const qty = parseFloat(document.getElementById('item_qty').value);
 
             if(name && rate && qty) {
                 const taxable = rate * qty;
@@ -145,51 +171,42 @@
                 const total = taxable + cgst + sgst;
 
                 items.push({ name, rate, qty, taxable, cgst, sgst, total });
-                renderTable();
-                document.getElementById('itemName').value = '';
-                document.getElementById('itemRate').value = '';
-                document.getElementById('itemQty').value = '';
+                render();
+                
+                // Clear inputs
+                document.getElementById('item_name').value = '';
+                document.getElementById('item_rate').value = '';
+                document.getElementById('item_qty').value = '';
+            } else {
+                alert("Please fill all item fields!");
             }
         }
 
-        function removeItem(i) { items.splice(i, 1); renderTable(); }
+        function remove(i) { items.splice(i, 1); render(); }
 
-        function renderTable() {
-            let html = '';
-            let tTaxable = 0, tCGST = 0, tSGST = 0, tGrand = 0;
-
+        function render() {
+            let h = '', tT = 0, tC = 0, tS = 0, tG = 0;
             items.forEach((item, i) => {
-                html += `<tr class="border-b">
-                    <td class="p-2 border text-center">${i+1}</td>
-                    <td class="p-2 border font-bold text-gray-700">${item.name}</td>
-                    <td class="p-2 border text-center">${item.qty}</td>
-                    <td class="p-2 border text-center">${item.rate.toFixed(2)}</td>
-                    <td class="p-2 border text-center">${item.taxable.toFixed(2)}</td>
-                    <td class="p-2 border text-center">${item.cgst.toFixed(2)}</td>
-                    <td class="p-2 border text-center">${item.sgst.toFixed(2)}</td>
-                    <td class="p-2 border text-right font-bold">${item.total.toFixed(2)}</td>
-                    <td class="p-2 border text-center no-print text-red-600 cursor-pointer" onclick="removeItem(${i})">✖</td>
+                h += `<tr class="border-b border-slate-300">
+                    <td class="p-2 border border-slate-300 text-center">${i+1}</td>
+                    <td class="p-2 border border-slate-300 font-bold">${item.name}</td>
+                    <td class="p-2 border border-slate-300 text-center">${item.qty}</td>
+                    <td class="p-2 border border-slate-300 text-center">${item.rate.toFixed(2)}</td>
+                    <td class="p-2 border border-slate-300 text-center">${item.taxable.toFixed(2)}</td>
+                    <td class="p-2 border border-slate-300 text-center">${item.cgst.toFixed(2)}</td>
+                    <td class="p-2 border border-slate-300 text-center">${item.sgst.toFixed(2)}</td>
+                    <td class="p-2 border border-slate-300 text-right font-black">${item.total.toFixed(2)}</td>
+                    <td class="p-2 border border-slate-300 text-center no-print text-red-600 cursor-pointer" onclick="remove(${i})">✖</td>
                 </tr>`;
-                tTaxable += item.taxable; tCGST += item.cgst; tSGST += item.sgst; tGrand += item.total;
+                tT += item.taxable; tC += item.cgst; tS += item.sgst; tG += item.total;
             });
-
-            document.getElementById('billBody').innerHTML = html;
-            document.getElementById('taxableTotal').innerText = tTaxable.toFixed(2);
-            document.getElementById('cgstTotal').innerText = tCGST.toFixed(2);
-            document.getElementById('sgstTotal').innerText = tSGST.toFixed(2);
-            document.getElementById('grandTotal').innerText = tGrand.toFixed(2);
-        }
-
-        function sendWhatsApp() {
-            const phone = document.getElementById('custPhone').value;
-            const shop = document.getElementById('shopName').value;
-            const type = document.getElementById('docType').value;
-            const total = document.getElementById('grandTotal').innerText;
-            if(!phone) return alert("Customer phone number zaroori hai!");
-            
-            const msg = `Hello! *${shop}* se aapka *${type}* amount *₹${total}* hai. Thank you!`;
-            window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+            document.getElementById('billBody').innerHTML = h;
+            document.getElementById('tot_taxable').innerText = tT.toFixed(2);
+            document.getElementById('tot_cgst').innerText = tC.toFixed(2);
+            document.getElementById('tot_sgst').innerText = tS.toFixed(2);
+            document.getElementById('tot_grand').innerText = "₹ " + tG.toFixed(2);
         }
     </script>
 </body>
 </html>
+```
