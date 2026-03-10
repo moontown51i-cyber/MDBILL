@@ -3,256 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillPro ERP - All-in-One</title>
+    <title>I-COMPUTER Billing Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        .yellow-gradient { background: linear-gradient(to bottom, #fcd34d, #fbbf24); }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        @media print { .no-print { display: none !important; } .print-area { display: block !important; padding: 0; } body { background: white; } }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        @media print { .no-print { display: none !important; } .print-area { display: block !important; width: 100%; } }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen">
+<body class="bg-gray-50 min-h-screen pb-20 font-sans">
 
-    <!-- Bottom Navigation for Mobile -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 text-white flex justify-around p-3 z-50 md:top-0 md:bottom-auto md:flex-col md:w-64 md:h-full no-print">
-        <h1 class="hidden md:block text-2xl font-black text-blue-400 p-4 mb-10">BILLPRO ERP</h1>
-        <button onclick="showTab('dashboard')" class="flex flex-col items-center gap-1"><span class="text-xl">📊</span><span class="text-xs">Dashboard</span></button>
-        <button onclick="showTab('billing')" class="flex flex-col items-center gap-1"><span class="text-xl">🧾</span><span class="text-xs">Billing</span></button>
-        <button onclick="showTab('inventory')" class="flex flex-col items-center gap-1"><span class="text-xl">📦</span><span class="text-xs">Inventory</span></button>
-        <button onclick="showTab('reports')" class="flex flex-col items-center gap-1"><span class="text-xl">📜</span><span class="text-xs">Reports</span></button>
-        <button onclick="showTab('settings')" class="flex flex-col items-center gap-1"><span class="text-xl">⚙️</span><span class="text-xs">Settings</span></button>
-    </nav>
+    <!-- MOBILE HEADER -->
+    <header class="yellow-gradient p-4 flex justify-between items-center shadow-md no-print sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">☰</span>
+            <div>
+                <h1 id="topShopName" class="font-bold text-lg uppercase leading-none italic">I COMPUTER</h1>
+                <span class="text-[10px] bg-white/50 px-1 rounded font-bold">UNREGISTERED</span>
+            </div>
+        </div>
+        <button onclick="openInvoice()" class="flex items-center gap-1 bg-white/30 px-3 py-1 rounded-full text-xs font-black border border-black/10">
+            📝 CREATE INVOICE
+        </button>
+    </header>
 
-    <!-- Main Content Area -->
-    <div class="md:ml-64 p-4 pb-24 md:pb-4">
-        
-        <!-- DASHBOARD TAB -->
-        <div id="dashboard" class="tab-content active">
-            <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-blue-600 text-white p-5 rounded-2xl shadow-lg">
-                    <p class="text-sm opacity-80">Today's Sales</p>
-                    <h3 class="text-2xl font-black">₹ <span id="dashSales">0</span></h3>
-                </div>
-                <div class="bg-green-600 text-white p-5 rounded-2xl shadow-lg">
-                    <p class="text-sm opacity-80">Total Profit</p>
-                    <h3 class="text-2xl font-black">₹ <span id="dashProfit">0</span></h3>
-                </div>
-                <div class="bg-orange-500 text-white p-5 rounded-2xl shadow-lg">
-                    <p class="text-sm opacity-80">Active Products</p>
-                    <h3 class="text-2xl font-black" id="dashStock">0</h3>
-                </div>
-                <div class="bg-purple-600 text-white p-5 rounded-2xl shadow-lg">
-                    <p class="text-sm opacity-80">Total Invoices</p>
-                    <h3 class="text-2xl font-black" id="dashInvoices">0</h3>
-                </div>
+    <!-- DASHBOARD VIEW -->
+    <main id="home-view" class="tab-content active p-4 max-w-4xl mx-auto no-print">
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div onclick="openInvoice('RETAIL')" class="bg-white p-4 rounded-2xl card-shadow text-center cursor-pointer border-b-4 border-yellow-400">
+                <div class="text-3xl mb-1 text-yellow-500">🏪</div>
+                <p class="text-[10px] font-black uppercase">Retail ➜</p>
+            </div>
+            <div onclick="openInvoice('QUOTATION')" class="bg-white p-4 rounded-2xl card-shadow text-center cursor-pointer border-b-4 border-blue-400">
+                <div class="text-3xl mb-1 text-blue-500">📄</div>
+                <p class="text-[10px] font-black uppercase">Quotation ➜</p>
+            </div>
+            <div onclick="openInvoice('PURCHASE')" class="bg-white p-4 rounded-2xl card-shadow text-center cursor-pointer border-b-4 border-green-400">
+                <div class="text-3xl mb-1 text-green-500">📦</div>
+                <p class="text-[10px] font-black uppercase">Purchase ➜</p>
             </div>
         </div>
 
-        <!-- BILLING TAB -->
-        <div id="billing" class="tab-content">
-            <h2 class="text-2xl font-bold mb-4">Create New Invoice</h2>
-            <div class="bg-white p-4 rounded-xl shadow mb-6 no-print">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <input id="cName" type="text" placeholder="Customer Name" class="border p-2 rounded">
-                    <input id="cPhone" type="number" placeholder="WhatsApp Number" class="border p-2 rounded">
-                    <select id="prodSelect" class="border p-2 rounded" onchange="selectProduct()">
-                        <option value="">-- Select Product From Inventory --</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
-                    <input id="itemName" type="text" placeholder="Item Name" class="border p-2 rounded col-span-2">
-                    <input id="itemRate" type="number" placeholder="Rate" class="border p-2 rounded">
-                    <input id="itemQty" type="number" placeholder="Qty" class="border p-2 rounded">
-                    <button onclick="addItem()" class="bg-blue-600 text-white font-bold rounded">+ ADD</button>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 print-area">
-                <div class="text-center mb-6 border-b pb-4">
-                    <h2 id="sName" class="text-2xl font-black uppercase">MY SHOP NAME</h2>
-                    <p id="sAddr" class="text-sm">Shop Address, City</p>
-                    <p class="text-xs font-bold uppercase mt-1">GSTIN: <span id="sGST">-</span></p>
-                </div>
-                <table class="w-full text-sm mb-6 border-collapse">
-                    <thead><tr class="bg-slate-100"><th class="border p-2 text-left">Item</th><th class="border p-2 text-center">Rate</th><th class="border p-2 text-center">Qty</th><th class="border p-2 text-right">Total</th></tr></thead>
-                    <tbody id="billItems"></tbody>
-                </table>
-                <div class="text-right text-xl font-black">GRAND TOTAL: ₹<span id="gTotal">0.00</span></div>
-                <div class="mt-10 no-print flex gap-2">
-                    <button onclick="saveInvoice()" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold uppercase">✅ Save & WhatsApp</button>
-                    <button onclick="window.print()" class="flex-1 bg-slate-800 text-white py-3 rounded-lg font-bold uppercase">🖨️ Print Bill</button>
-                </div>
-            </div>
+        <h3 class="font-black text-gray-700 mb-4 px-1 text-sm tracking-widest uppercase">Quick Actions</h3>
+        <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="flex flex-col items-center gap-1"><div class="bg-purple-100 p-4 rounded-2xl text-xl shadow-sm">📱</div><span class="text-[9px] font-bold text-center">e-Invoice</span></div>
+            <div class="flex flex-col items-center gap-1"><div class="bg-blue-100 p-4 rounded-2xl text-xl shadow-sm">🚚</div><span class="text-[9px] font-bold text-center">e-Way Bill</span></div>
+            <div class="flex flex-col items-center gap-1"><div class="bg-gray-100 p-4 rounded-2xl text-xl shadow-sm">📜</div><span class="text-[9px] font-bold text-center">Proforma</span></div>
+            <div class="flex flex-col items-center gap-1"><div class="bg-red-100 p-4 rounded-2xl text-xl shadow-sm">💰</div><span class="text-[9px] font-bold text-center">Receipt</span></div>
         </div>
 
-        <!-- INVENTORY TAB -->
-        <div id="inventory" class="tab-content">
-            <h2 class="text-2xl font-bold mb-4">Stock Management</h2>
-            <div class="bg-white p-4 rounded-xl shadow mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-                    <input id="pName" type="text" placeholder="Product Name" class="border p-2 rounded">
-                    <input id="pRate" type="number" placeholder="Selling Price" class="border p-2 rounded">
-                    <input id="pCost" type="number" placeholder="Cost Price (Profit use)" class="border p-2 rounded">
-                    <button onclick="addProduct()" class="bg-purple-600 text-white font-bold p-2 rounded uppercase">Add to Inventory</button>
+        <div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
+            <button onclick="openInvoice()" class="bg-yellow-400 text-slate-900 font-black px-10 py-4 rounded-full shadow-2xl flex items-center gap-3 border-2 border-white uppercase text-sm tracking-tighter">
+                📝 CREATE NEW INVOICE
+            </button>
+        </div>
+    </main>
+
+    <!-- INVOICE CREATOR VIEW -->
+    <div id="invoice-view" class="tab-content p-4 max-w-5xl mx-auto no-print">
+        <div class="bg-white p-5 rounded-3xl shadow-xl border border-gray-100">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showHome()" class="text-blue-600 font-black text-sm uppercase italic tracking-widest">← Back</button>
+                <select id="docType" class="bg-gray-100 p-2 rounded-xl font-black text-xs outline-none uppercase" onchange="updateView()">
+                    <option value="RETAIL INVOICE">Retail Invoice</option>
+                    <option value="QUOTATION">Quotation</option>
+                    <option value="PURCHASE">Purchase Order</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-3">
+                    <p class="font-black text-[10px] uppercase text-gray-400 tracking-widest">👤 Customer Details</p>
+                    <input id="in_custName" type="text" placeholder="Customer Name" class="w-full border p-3 rounded-2xl outline-none focus:border-yellow-400 bg-gray-50" oninput="updateView()">
+                    <textarea id="in_custAddr" placeholder="Customer Address" class="w-full border p-3 rounded-2xl outline-none h-20 bg-gray-50" oninput="updateView()"></textarea>
+                    <input id="in_custGST" type="text" placeholder="Customer GSTIN" class="w-full border p-3 rounded-2xl outline-none bg-gray-50" oninput="updateView()">
+                    <input id="in_custPhone" type="number" placeholder="WhatsApp Number (91...)" class="w-full border p-3 rounded-2xl outline-none bg-gray-50" oninput="updateView()">
+                </div>
+                <div class="space-y-3">
+                    <p class="font-black text-[10px] uppercase text-gray-400 tracking-widest">📦 Add Items</p>
+                    <input id="it_name" type="text" placeholder="Item Name / Description" class="w-full border p-3 rounded-2xl outline-none bg-gray-50">
+                    <div class="flex gap-2">
+                        <input id="it_rate" type="number" placeholder="Rate" class="w-1/2 border p-3 rounded-2xl outline-none bg-gray-50">
+                        <input id="it_qty" type="number" placeholder="Qty" class="w-1/2 border p-3 rounded-2xl outline-none bg-gray-50">
+                    </div>
+                    <button onclick="addItem()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black uppercase text-sm tracking-widest shadow-lg">+ Add Item</button>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-100"><tr><th class="p-3 text-left">Product</th><th class="p-3">Price</th><th class="p-3">Cost</th><th class="p-3">Action</th></tr></thead>
-                    <tbody id="inventoryList"></tbody>
-                </table>
+
+            <div class="grid grid-cols-2 gap-3 mt-8">
+                <button onclick="window.print()" class="bg-yellow-400 py-4 rounded-2xl font-black shadow-lg uppercase text-xs">🖨️ Print Bill</button>
+                <button onclick="sendWhatsApp()" class="bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase text-xs">💬 WhatsApp Bill</button>
             </div>
         </div>
-
-        <!-- REPORTS TAB -->
-        <div id="reports" class="tab-content">
-            <h2 class="text-2xl font-bold mb-4">Sales Report</h2>
-            <div class="bg-white rounded-xl shadow overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-100"><tr><th class="p-3 text-left">Date</th><th class="p-3">Customer</th><th class="p-3">Amount</th><th class="p-3">Action</th></tr></thead>
-                    <tbody id="reportList"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- SETTINGS TAB -->
-        <div id="settings" class="tab-content">
-            <h2 class="text-2xl font-bold mb-4">Software Settings</h2>
-            <div class="bg-white p-6 rounded-xl shadow-lg space-y-4">
-                <input id="set_name" type="text" placeholder="My Shop Name" class="w-full border p-3 rounded" oninput="updateSettings()">
-                <textarea id="set_addr" placeholder="My Shop Address" class="w-full border p-3 rounded" oninput="updateSettings()"></textarea>
-                <input id="set_gst" type="text" placeholder="My GSTIN" class="w-full border p-3 rounded uppercase" oninput="updateSettings()">
-                <div class="p-4 bg-red-50 text-red-600 rounded">
-                    <p class="font-bold">Clear All Data</p>
-                    <button onclick="localStorage.clear(); location.reload();" class="text-xs underline">Delete Everything & Reset</button>
-                </div>
-            </div>
-        </div>
-
     </div>
 
+    <!-- SETTINGS VIEW -->
+    <div id="settings-view" class="tab-content p-6 no-print max-w-lg mx-auto">
+        <h2 class="text-xl font-black mb-6 uppercase tracking-widest text-gray-700">⚙️ Shop Settings</h2>
+        <div class="bg-white p-6 rounded-3xl shadow-xl space-y-4 border border-gray-100">
+            <input id="set_shopName" type="text" placeholder="Your Shop Name" class="w-full border p-4 rounded-2xl outline-none focus:border-yellow-400" oninput="saveSettings()">
+            <textarea id="set_shopAddr" placeholder="Full Shop Address" class="w-full border p-4 rounded-2xl h-32 outline-none focus:border-yellow-400" oninput="saveSettings()"></textarea>
+            <input id="set_shopGST" type="text" placeholder="Your GSTIN" class="w-full border p-4 rounded-2xl outline-none focus:border-yellow-400" oninput="saveSettings()">
+            <p class="text-[10px] text-center text-gray-400 uppercase font-black tracking-widest">Data is saved on this device</p>
+        </div>
+    </div>
+
+    <!-- PROFESSIONAL PRINT AREA (Aapki Image Style) -->
+    <div class="hidden print-area p-8 bg-white max-w-4xl mx-auto border border-gray-100 shadow-2xl">
+        <div class="flex justify-between items-start mb-10 border-b pb-6">
+            <div>
+                <h1 id="out_shopName" class="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">SHOP NAME</h1>
+                <p id="out_shopAddr" class="text-[10px] text-gray-600 whitespace-pre-wrap max-w-xs mt-1 font-bold"></p>
+                <p class="text-[10px] font-black mt-2 text-slate-700 uppercase">GSTIN: <span id="out_shopGST" class="font-mono"></span></p>
+            </div>
+            <div class="text-right">
+                <h1 id="out_docType" class="text-5xl font-black text-gray-100 uppercase italic">RETAIL</h1>
+            </div>
+        </div>
+
+        <div class="flex justify-between mb-8 border border-gray-200 p-4 bg-gray-50 rounded-xl">
+            <div class="text-[10px] space-y-1">
+                <p class="font-black text-gray-400 mb-2 uppercase tracking-widest">Document For :</p>
+                <p id="out_custName" class="font-black text-sm uppercase text-slate-800"></p>
+                <p id="out_custAddr" class="whitespace-pre-wrap max-w-xs font-bold text-gray-600"></p>
+                <p id="out_custPhone" class="font-bold"></p>
+                <p id="out_custGST" class="font-black text-slate-800 mt-2 uppercase"></p>
+            </div>
+            <div class="text-[10px] space-y-2 text-right">
+                <p class="font-bold text-gray-600">No : <span id="out_inv_no" class="font-black text-slate-900 ml-4">#791</span></p>
+                <p class="font-bold text-gray-600">Date : <span id="out_date" class="font-black text-slate-900 ml-4"></span></p>
+                <div class="mt-4 border-t border-gray-300 pt-2">
+                    <p class="font-black text-gray-400 uppercase mb-1">Ship To :</p>
+                    <p id="ship_name" class="font-black text-slate-800"></p>
+                    <p id="ship_addr" class="max-w-xs text-gray-600"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Table with GST -->
+        <table class="w-full border-collapse border-2 border-slate-800 text-[9px] mb-4">
+            <thead>
+                <tr class="bg-slate-800 text-white">
+                    <th class="border border-slate-700 p-2 text-center uppercase">Sr.</th>
+                    <th class="border border-slate-700 p-2 w-1/3 text-left uppercase">Name of product</th>
+                    <th class="border border-slate-700 p-2 text-center uppercase">QTY</th>
+                    <th class="border border-slate-700 p-2 text-center uppercase">Rate</th>
+                    <th class="border border-slate-700 p-2 text-center bg-slate-700 uppercase">Taxable</th>
+                    <th class="border border-slate-700 p-2 text-center" colspan="2">CGST (9%)</th>
+                    <th class="border border-slate-700 p-2 text-center" colspan="2">SGST (9%)</th>
+                    <th class="border border-slate-700 p-2 text-right bg-slate-900 uppercase">Total</th>
+                </tr>
+            </thead>
+            <tbody id="printBody" class="font-bold text-slate-700"></tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="flex justify-end mt-4">
+            <table class="w-72 border-collapse border-2 border-slate-800 text-[11px]">
+                <tr><td class="border border-slate-300 p-2 font-black uppercase bg-gray-50 text-gray-500">Taxable Amount</td><td id="pr_taxable" class="border border-slate-300 p-2 text-right font-black">₹ 0.00</td></tr>
+                <tr><td class="border border-slate-300 p-2 font-bold text-gray-500">Add : CGST (9%)</td><td id="pr_cgst" class="border border-slate-300 p-2 text-right">₹ 0.00</td></tr>
+                <tr><td class="border border-slate-300 p-2 font-bold text-gray-500">Add : SGST (9%)</td><td id="pr_sgst" class="border border-slate-300 p-2 text-right">₹ 0.00</td></tr>
+                <tr class="bg-slate-800 text-white"><td class="border border-slate-700 p-3 font-black text-sm uppercase italic">Total Amount</td><td id="pr_grand" class="border border-slate-700 p-3 text-right font-black text-sm">₹ 0.00</td></tr>
+            </table>
+        </div>
+
+        <div class="mt-20 flex justify-between items-end">
+            <div class="text-[9px] text-gray-400 italic">
+                <p class="font-black text-slate-800 mb-1 uppercase tracking-widest">Terms & Conditions :</p>
+                <p>1. This is a computer generated document.</p>
+                <p>2. Subject to local jurisdiction.</p>
+            </div>
+            <div class="text-center w-64 border-t-2 border-slate-800 pt-2">
+                <p class="text-[10px] font-black uppercase italic" id="sign_shop">For, I COMPUTER</p>
+                <p class="text-[10px] mt-16 font-black text-slate-400 uppercase tracking-widest">Authorized Signature</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM MOBILE NAV -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3 no-print z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+        <button onclick="showHome()" class="flex flex-col items-center group"><span class="text-2xl group-active:scale-125 transition">🏠</span><span class="text-[9px] font-black uppercase mt-1 text-gray-500">Home</span></button>
+        <button class="flex flex-col items-center opacity-30"><span class="text-2xl">💳</span><span class="text-[9px] font-black uppercase mt-1 text-gray-500">Pay</span></button>
+        <button onclick="showSettings()" class="flex flex-col items-center group"><span class="text-2xl group-active:scale-125 transition">⚙️</span><span class="text-[9px] font-black uppercase mt-1 text-gray-500">Setting</span></button>
+        <button class="flex flex-col items-center opacity-30"><span class="text-2xl">📞</span><span class="text-[9px] font-black uppercase mt-1 text-gray-500">Contact</span></button>
+    </nav>
+
     <script>
-        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-        let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
-        let currentBillItems = [];
+        let items = [];
+        window.onload = () => {
+            document.getElementById('set_shopName').value = localStorage.getItem('s_name') || 'I COMPUTER';
+            document.getElementById('set_shopAddr').value = localStorage.getItem('s_addr') || 'Nagpur, Maharashtra';
+            document.getElementById('set_shopGST').value = localStorage.getItem('s_gst') || '27CAFPS2851G1ZJ';
+            document.getElementById('out_inv_no').innerText = '#' + (Math.floor(Math.random() * 900) + 100);
+            document.getElementById('out_date').innerText = new Date().toLocaleDateString();
+            saveSettings();
+        };
 
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            refreshAll();
+        function showHome() { hideAll(); document.getElementById('home-view').classList.add('active'); }
+        function openInvoice(type = 'RETAIL INVOICE') { 
+            hideAll(); 
+            document.getElementById('invoice-view').classList.add('active'); 
+            document.getElementById('docType').value = type === 'QUOTATION' ? 'QUOTATION' : 'RETAIL INVOICE';
+            updateView();
+        }
+        function showSettings() { hideAll(); document.getElementById('settings-view').classList.add('active'); }
+        function hideAll() { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); }
+
+        function saveSettings() {
+            const n = document.getElementById('set_shopName').value;
+            localStorage.setItem('s_name', n);
+            localStorage.setItem('s_addr', document.getElementById('set_shopAddr').value);
+            localStorage.setItem('s_gst', document.getElementById('set_shopGST').value);
+            document.getElementById('topShopName').innerText = n;
+            updateView();
         }
 
-        // Inventory Logic
-        function addProduct() {
-            const name = document.getElementById('pName').value;
-            const rate = document.getElementById('pRate').value;
-            const cost = document.getElementById('pCost').value;
-            if(!name || !rate) return alert("Fill details");
-            inventory.push({ name, rate: parseFloat(rate), cost: parseFloat(cost || 0) });
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-            refreshAll();
-        }
-
-        function refreshAll() {
-            // Render Inventory
-            let invH = '';
-            inventory.forEach((p, i) => {
-                invH += `<tr class="border-b"><td class="p-3">${p.name}</td><td class="p-3 text-center">₹${p.rate}</td><td class="p-3 text-center">₹${p.cost}</td><td class="p-3 text-center"><button onclick="deleteProd(${i})" class="text-red-500 font-bold text-xs">DEL</button></td></tr>`;
-            });
-            document.getElementById('inventoryList').innerHTML = invH;
-
-            // Render Product Select
-            let selH = '<option value="">-- Select Product --</option>';
-            inventory.forEach(p => selH += `<option value="${p.name}">${p.name} (₹${p.rate})</option>`);
-            document.getElementById('prodSelect').innerHTML = selH;
-
-            // Render Reports
-            let repH = '';
-            invoices.reverse().forEach(inv => {
-                repH += `<tr class="border-b"><td class="p-3">${inv.date}</td><td class="p-3 text-center">${inv.customer}</td><td class="p-3 text-center">₹${inv.total}</td><td class="p-3 text-center font-bold text-blue-600 cursor-pointer">View</td></tr>`;
-            });
-            document.getElementById('reportList').innerHTML = repH;
-
-            // Update Dashboard
-            let today = new Date().toLocaleDateString();
-            let todaySales = invoices.filter(i => i.date === today).reduce((a, b) => a + b.total, 0);
-            document.getElementById('dashSales').innerText = todaySales.toFixed(2);
-            document.getElementById('dashStock').innerText = inventory.length;
-            document.getElementById('dashInvoices').innerText = invoices.length;
+        function updateView() {
+            const sName = localStorage.getItem('s_name');
+            document.getElementById('out_shopName').innerText = sName;
+            document.getElementById('out_shopAddr').innerText = localStorage.getItem('s_addr');
+            document.getElementById('out_shopGST').innerText = localStorage.getItem('s_gst');
+            document.getElementById('sign_shop').innerText = "For, " + sName;
             
-            // Update Settings
-            document.getElementById('sName').innerText = localStorage.getItem('s_name') || 'MY SHOP NAME';
-            document.getElementById('sAddr').innerText = localStorage.getItem('s_addr') || 'Address Details';
-            document.getElementById('sGST').innerText = localStorage.getItem('s_gst') || '-';
-        }
-
-        function deleteProd(i) { inventory.splice(i, 1); localStorage.setItem('inventory', JSON.stringify(inventory)); refreshAll(); }
-
-        function selectProduct() {
-            const val = document.getElementById('prodSelect').value;
-            const p = inventory.find(i => i.name === val);
-            if(p) {
-                document.getElementById('itemName').value = p.name;
-                document.getElementById('itemRate').value = p.rate;
-                document.getElementById('itemQty').value = 1;
-            }
+            document.getElementById('out_docType').innerText = document.getElementById('docType').value;
+            document.getElementById('out_custName').innerText = document.getElementById('in_custName').value || "Customer Name";
+            document.getElementById('out_custAddr').innerText = document.getElementById('in_custAddr').value || "Address";
+            document.getElementById('out_custPhone').innerText = document.getElementById('in_custPhone').value || "-";
+            document.getElementById('out_custGST').innerText = document.getElementById('in_custGST').value ? "GSTIN: " + document.getElementById('in_custGST').value : "";
+            
+            document.getElementById('ship_name').innerText = document.getElementById('in_custName').value || "Customer Name";
+            document.getElementById('ship_addr').innerText = document.getElementById('in_custAddr').value || "Address";
         }
 
         function addItem() {
-            const name = document.getElementById('itemName').value;
-            const rate = parseFloat(document.getElementById('itemRate').value);
-            const qty = parseFloat(document.getElementById('itemQty').value);
-            if(name && rate && qty) {
-                currentBillItems.push({ name, rate, qty, total: rate * qty });
-                renderBill();
-            }
+            const name = document.getElementById('it_name').value;
+            const rate = parseFloat(document.getElementById('it_rate').value);
+            const qty = parseFloat(document.getElementById('it_qty').value);
+            if(!name || !rate || !qty) return alert("Pehle item details bharein!");
+
+            const taxable = rate * qty;
+            const cgstAmt = taxable * 0.09;
+            const sgstAmt = taxable * 0.09;
+            const total = taxable + cgstAmt + sgstAmt;
+
+            items.push({ name, rate, qty, taxable, cgstAmt, sgstAmt, total });
+            renderPrintTable();
+            document.getElementById('it_name').value = '';
+            document.getElementById('it_rate').value = '';
+            document.getElementById('it_qty').value = '';
         }
 
-        function renderBill() {
-            let h = '', g = 0;
-            currentBillItems.forEach(item => {
-                h += `<tr><td class="border p-2">${item.name}</td><td class="border p-2 text-center">${item.rate}</td><td class="border p-2 text-center">${item.qty}</td><td class="border p-2 text-right">${item.total.toFixed(2)}</td></tr>`;
-                g += item.total;
+        function renderPrintTable() {
+            let h = '', tT = 0, tC = 0, tS = 0, tG = 0;
+            items.forEach((item, i) => {
+                h += `<tr class="border-b border-slate-300">
+                    <td class="border border-slate-300 p-2 text-center">${i+1}</td>
+                    <td class="border border-slate-300 p-2 uppercase">${item.name}</td>
+                    <td class="border border-slate-300 p-2 text-center">${item.qty}</td>
+                    <td class="border border-slate-300 p-2 text-center">${item.rate.toFixed(2)}</td>
+                    <td class="border border-slate-300 p-2 text-center bg-gray-50">${item.taxable.toFixed(2)}</td>
+                    <td class="border border-slate-300 p-2 text-center text-[8px] text-gray-400">9%</td>
+                    <td class="border border-slate-300 p-2 text-center">${item.cgstAmt.toFixed(2)}</td>
+                    <td class="border border-slate-300 p-2 text-center text-[8px] text-gray-400">9%</td>
+                    <td class="border border-slate-300 p-2 text-center">${item.sgstAmt.toFixed(2)}</td>
+                    <td class="border border-slate-300 p-2 text-right font-black bg-gray-50">${item.total.toFixed(2)}</td>
+                </tr>`;
+                tT += item.taxable; tC += item.cgstAmt; tS += item.sgstAmt; tG += item.total;
             });
-            document.getElementById('billItems').innerHTML = h;
-            document.getElementById('gTotal').innerText = g.toFixed(2);
+            document.getElementById('printBody').innerHTML = h;
+            document.getElementById('pr_taxable').innerText = "₹ " + tT.toFixed(2);
+            document.getElementById('pr_cgst').innerText = "₹ " + tC.toFixed(2);
+            document.getElementById('pr_sgst').innerText = "₹ " + tS.toFixed(2);
+            document.getElementById('pr_grand').innerText = "₹ " + tG.toFixed(2);
         }
 
-        function saveInvoice() {
-            const total = parseFloat(document.getElementById('gTotal').innerText);
-            if(total <= 0) return alert("Add items first");
-            const inv = {
-                date: new Date().toLocaleDateString(),
-                customer: document.getElementById('cName').value || 'Cash Customer',
-                total: total
-            };
-            invoices.push(inv);
-            localStorage.setItem('invoices', JSON.stringify(invoices));
+        function sendWhatsApp() {
+            const phone = document.getElementById('in_custPhone').value;
+            const shop = localStorage.getItem('s_name');
+            const total = document.getElementById('pr_grand').innerText;
+            const type = document.getElementById('docType').value;
+
+            if(!phone) return alert("Pehle Customer ka WhatsApp Number daalein (91 ke saath)!");
             
-            // WhatsApp Share
-            const phone = document.getElementById('cPhone').value;
-            if(phone) {
-                const msg = `Hello! Thank you for shopping with *${localStorage.getItem('s_name')}*. Your bill amount is *₹${total}*.`;
-                window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`);
-            }
-            alert("Invoice Saved!");
-            location.reload();
+            const msg = `Hello! *${shop}* se aapka *${type}* amount *${total}* hai. Dhanyawad! 🙏`;
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
         }
-
-        function updateSettings() {
-            localStorage.setItem('s_name', document.getElementById('set_name').value);
-            localStorage.setItem('s_addr', document.getElementById('set_addr').value);
-            localStorage.setItem('s_gst', document.getElementById('set_gst').value);
-            refreshAll();
-        }
-
-        window.onload = () => {
-            document.getElementById('set_name').value = localStorage.getItem('s_name') || '';
-            document.getElementById('set_addr').value = localStorage.getItem('s_addr') || '';
-            document.getElementById('set_gst').value = localStorage.getItem('s_gst') || '';
-            refreshAll();
-        };
     </script>
 </body>
 </html>
