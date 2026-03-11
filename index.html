@@ -3,177 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional ERP - A4 Perfect Print</title>
+    <title>Professional ERP v7.0 - Perfect A4</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #525659; }
-        .invoice-container { 
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #4a4a4a; }
+        /* A4 Size styling for PDF */
+        #invoice-page { 
             background: white; 
-            width: 210mm; /* A4 Width */
-            min-height: 297mm; /* A4 Height */
-            margin: 20px auto; 
-            padding: 15mm;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            width: 210mm; 
+            padding: 12mm; 
+            margin: 10px auto; 
+            box-sizing: border-box;
+            border: 1px solid #ddd;
         }
-        .table-gst th, .table-gst td { border: 1px solid #000; padding: 4px; font-size: 11px; }
-        .no-print-nav { position: fixed; top: 0; width: 100%; background: #1a1a1a; color: white; padding: 10px; z-index: 1000; display: flex; gap: 10px; justify-content: center; }
+        .table-professional { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table-professional th, .table-professional td { 
+            border: 1px solid #000; 
+            padding: 6px; 
+            font-size: 11px; 
+            text-align: center;
+        }
+        .table-professional th { background-color: #f3f4f6; font-weight: bold; text-transform: uppercase; }
         
-        @media (max-width: 800px) {
-            body { background: #f3f4f6; }
-            .invoice-container { width: 95%; margin: 80px auto; padding: 5mm; min-height: auto; overflow-x: auto; }
-            .invoice-inner { min-width: 700px; } /* Prevent table squeeze on mobile */
+        .no-print-nav { position: fixed; top: 0; left: 0; width: 100%; background: #222; color: white; padding: 10px; z-index: 1000; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        
+        @media (max-width: 850px) {
+            body { background: #f0f2f5; }
+            #invoice-page { width: 100%; padding: 5mm; margin-top: 120px; overflow-x: auto; border: none; }
+            .invoice-inner { min-width: 750px; }
         }
     </style>
 </head>
 <body class="pb-20">
 
-    <div class="no-print-nav flex-wrap">
-        <button onclick="showSection('input')" class="bg-blue-600 px-4 py-1 rounded text-xs font-bold uppercase">1. Entry (डेटा डालें)</button>
-        <button onclick="generatePDF()" class="bg-red-600 px-4 py-1 rounded text-xs font-bold uppercase">2. Download PDF (बिल निकालें)</button>
-        <button onclick="shareWA()" class="bg-green-600 px-4 py-1 rounded text-xs font-bold uppercase">3. WhatsApp (भेजें)</button>
-        <button onclick="showSection('reports')" class="bg-gray-600 px-4 py-1 rounded text-xs font-bold uppercase">Reports</button>
+    <!-- Navigation Buttons -->
+    <div class="no-print-nav">
+        <button onclick="showSec('input')" class="bg-blue-600 px-4 py-1 rounded text-xs font-bold uppercase">1. Data Entry</button>
+        <button onclick="generatePDF()" class="bg-red-600 px-4 py-1 rounded text-xs font-bold uppercase">2. Download PDF</button>
+        <button onclick="shareWA()" class="bg-green-600 px-4 py-1 rounded text-xs font-bold uppercase">3. WhatsApp</button>
+        <button onclick="showSec('reports')" class="bg-gray-600 px-4 py-1 rounded text-xs font-bold uppercase">History</button>
     </div>
 
-    <!-- Input Panel (Hidden during PDF generation) -->
-    <div id="input-panel" class="max-w-4xl mx-auto mt-20 p-4 bg-white rounded shadow-xl no-print">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2 border-r pr-4">
-                <h3 class="font-bold border-b">Party Details</h3>
-                <select id="bill_type" onchange="upd()" class="w-full border p-2 rounded bg-yellow-50 font-bold">
-                    <option value="Quotation">QUOTATION</option>
-                    <option value="Tax Invoice">TAX INVOICE</option>
-                </select>
-                <input id="c_name" type="text" placeholder="Party Name" oninput="upd()" class="w-full border p-2 rounded">
-                <input id="c_addr" type="text" placeholder="Party Address" oninput="upd()" class="w-full border p-2 rounded">
-                <input id="c_gst" type="text" placeholder="Party GSTIN" oninput="upd()" class="w-full border p-2 rounded uppercase">
-                <input id="c_phone" type="number" placeholder="WhatsApp Number" class="w-full border p-2 rounded">
-            </div>
+    <!-- Entry Form -->
+    <div id="input-panel" class="max-w-5xl mx-auto mt-24 p-6 bg-white rounded shadow-2xl no-print">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Shop Profile -->
             <div class="space-y-2">
-                <h3 class="font-bold border-b">Add Item</h3>
-                <input id="i_name" type="text" placeholder="Item Description" class="w-full border p-2 rounded">
+                <h3 class="font-bold border-b text-blue-700 uppercase text-sm">Shop Settings</h3>
+                <input id="s_name" type="text" placeholder="Shop Name" oninput="upd()" class="w-full border p-2 rounded text-sm">
+                <input id="s_addr" type="text" placeholder="Full Address" oninput="upd()" class="w-full border p-2 rounded text-sm">
+                <input id="s_gst" type="text" placeholder="Shop GSTIN (Example: 27CAFPS...)" oninput="upd()" class="w-full border p-2 rounded text-sm uppercase">
+            </div>
+            <!-- Party Details -->
+            <div class="space-y-2">
+                <h3 class="font-bold border-b text-green-700 uppercase text-sm">Customer Details</h3>
+                <select id="bill_type" onchange="upd()" class="w-full border p-2 rounded bg-yellow-50 font-bold text-sm">
+                    <option value="TAX INVOICE">TAX INVOICE</option>
+                    <option value="QUOTATION">QUOTATION</option>
+                </select>
+                <input id="c_name" type="text" placeholder="Customer Name" oninput="upd()" class="w-full border p-2 rounded text-sm">
+                <input id="c_addr" type="text" placeholder="Customer Address" oninput="upd()" class="w-full border p-2 rounded text-sm">
+                <input id="c_phone" type="number" placeholder="Customer WhatsApp No" class="w-full border p-2 rounded text-sm">
+            </div>
+            <!-- Item Entry -->
+            <div class="space-y-2">
+                <h3 class="font-bold border-b text-orange-700 uppercase text-sm">Add Products</h3>
+                <input id="i_name" type="text" placeholder="Item Description" class="w-full border p-2 rounded text-sm">
                 <div class="flex gap-2">
-                    <input id="i_rate" type="number" placeholder="Rate" class="w-1/2 border p-2 rounded">
-                    <input id="i_qty" type="number" placeholder="Qty" class="w-1/4 border p-2 rounded">
-                    <select id="i_gst" class="w-1/4 border p-2 rounded">
+                    <input id="i_rate" type="number" placeholder="Rate" class="w-1/2 border p-2 rounded text-sm">
+                    <input id="i_qty" type="number" placeholder="Qty" class="w-1/4 border p-2 rounded text-sm">
+                    <select id="i_gst" class="w-1/4 border p-2 rounded text-xs">
                         <option value="18">18%</option>
                         <option value="12">12%</option>
                         <option value="5">5%</option>
                         <option value="0">0%</option>
                     </select>
                 </div>
-                <button onclick="addItem()" class="w-full bg-slate-800 text-white py-2 rounded font-bold hover:bg-black transition">+ ADD TO LIST</button>
-                <div class="mt-4 p-2 bg-blue-50 rounded text-xs">
-                    <b>Shop Settings:</b>
-                    <input id="s_name" type="text" placeholder="Shop Name" oninput="upd()" class="w-full border p-1 mt-1 rounded">
-                    <input id="s_addr" type="text" placeholder="Address" oninput="upd()" class="w-full border p-1 mt-1 rounded text-[10px]">
-                </div>
+                <button onclick="addItem()" class="w-full bg-slate-800 text-white py-2 rounded font-bold">+ ADD TO LIST</button>
             </div>
         </div>
     </div>
 
-    <!-- Bill Preview (A4 Area) -->
-    <div id="invoice-page" class="invoice-container">
+    <!-- Bill Page (The A4 Preview) -->
+    <div id="invoice-page">
         <div class="invoice-inner">
-            <!-- Header -->
+            <!-- Header Section -->
             <div class="flex justify-between items-start mb-6">
-                <div class="w-1/2">
-                    <h1 id="out_s_name" class="text-2xl font-bold uppercase leading-none">SHOP NAME</h1>
-                    <p id="out_s_addr" class="text-[10px] mt-2 text-gray-700 leading-tight">Address Line...</p>
-                    <p class="text-[11px] font-bold mt-2">GSTIN : <span id="out_s_gst">27XXXXX</span></p>
+                <div class="w-2/3">
+                    <h1 id="out_s_name" class="text-3xl font-bold uppercase leading-tight">I COMPUTER</h1>
+                    <p id="out_s_addr" class="text-[11px] text-gray-700 max-w-sm mt-1 leading-normal">Address Line...</p>
+                    <p class="text-[12px] font-bold mt-2 uppercase">GSTIN : <span id="out_s_gst" class="text-black">27XXXXX</span></p>
                 </div>
-                <div class="text-right">
-                    <h1 id="out_title" class="text-4xl font-light text-gray-400 uppercase">Quotation</h1>
+                <div class="w-1/3 text-right">
+                    <h1 id="out_title" class="text-4xl font-light text-gray-400 uppercase tracking-tighter">TAX INVOICE</h1>
                 </div>
             </div>
 
+            <!-- Party Details Box -->
             <div class="flex justify-between text-[11px] border-t border-black pt-4 mb-4">
                 <div class="w-1/2">
-                    <p class="font-bold underline mb-1">Quotation For / Bill To :</p>
-                    <p id="out_c_name" class="font-bold text-sm">CASH CUSTOMER</p>
-                    <p id="out_c_addr" class="max-w-xs text-gray-600">Customer Address</p>
-                    <p id="out_c_gst" class="font-bold">GSTIN: -</p>
+                    <p class="font-bold underline mb-1">Billing For / Bill To :</p>
+                    <p id="out_c_name" class="font-bold text-sm uppercase">CASH CUSTOMER</p>
+                    <p id="out_c_addr" class="max-w-xs text-gray-600">Customer Address Details</p>
+                    <p class="font-bold mt-1 uppercase">GSTIN: <span id="out_c_gst">-</span></p>
                 </div>
-                <div class="w-1/3 text-right space-y-1">
-                    <div class="flex justify-between"><span>Quotation No</span><span>:</span><span id="out_no" class="font-bold">791</span></div>
-                    <div class="flex justify-between"><span>Date</span><span>:</span><span id="out_date">07-03-2024</span></div>
-                    <div class="mt-4 border p-2 bg-gray-50 text-left">
-                        <p class="font-bold underline">Ship To:</p>
-                        <p id="out_ship_name" class="font-bold">CASH CUSTOMER</p>
-                        <p id="out_ship_addr">Same as above</p>
-                    </div>
+                <div class="w-2/5 text-right">
+                    <table class="w-full text-[11px]">
+                        <tr><td class="text-left font-semibold" id="out_lbl_no">Invoice No</td><td>:</td><td id="out_no" class="font-bold text-right">791</td></tr>
+                        <tr><td class="text-left font-semibold">Date</td><td>:</td><td id="out_date" class="text-right">11/03/2024</td></tr>
+                        <tr><td colspan="3" class="pt-2">
+                            <div class="border p-2 bg-gray-50 text-left">
+                                <p class="font-bold underline text-[9px]">Ship To:</p>
+                                <p id="out_ship_name" class="font-bold uppercase text-[10px]">CASH CUSTOMER</p>
+                                <p class="text-[9px]">Same as above</p>
+                            </div>
+                        </td></tr>
+                    </table>
                 </div>
             </div>
 
-            <!-- Main Table -->
-            <table class="w-full border-collapse table-gst">
+            <!-- Main Professional Table -->
+            <table class="table-professional">
                 <thead>
-                    <tr class="bg-gray-100 text-center font-bold">
+                    <tr>
                         <th rowspan="2" class="w-8">Sr.</th>
                         <th rowspan="2">Name of product</th>
                         <th rowspan="2" class="w-12">QTY</th>
-                        <th rowspan="2" class="w-16">Rate</th>
-                        <th rowspan="2" class="w-20">Taxable Val</th>
-                        <th colspan="2" class="bg-gray-50">CGST</th>
-                        <th colspan="2" class="bg-gray-50">SGST</th>
+                        <th rowspan="2" class="w-20">Rate</th>
+                        <th rowspan="2" class="w-24">Taxable Val</th>
+                        <th colspan="2">CGST</th>
+                        <th colspan="2">SGST</th>
                         <th rowspan="2" class="w-24">Total</th>
                     </tr>
-                    <tr class="bg-gray-50 text-[9px]">
-                        <th>Rate</th><th>Amt</th>
-                        <th>Rate</th><th>Amt</th>
+                    <tr>
+                        <th class="text-[9px] w-12">Rate</th><th class="text-[9px] w-16">Amt</th>
+                        <th class="text-[9px] w-12">Rate</th><th class="text-[9px] w-16">Amt</th>
                     </tr>
                 </thead>
                 <tbody id="billBody">
-                    <!-- Dynamic Rows -->
+                    <!-- Products will be added here -->
                 </tbody>
             </table>
 
-            <!-- Summary Box -->
+            <!-- Calculation & Summary -->
             <div class="flex justify-between mt-6">
                 <div class="w-1/2 text-[10px] italic text-gray-500">
-                    <p class="font-bold uppercase underline not-italic">Terms and Conditions:</p>
+                    <p class="font-bold uppercase underline not-italic text-black">Terms and Conditions:</p>
                     <p>1. This is an electronically generated document.</p>
                     <p>2. All disputes are subject to local jurisdiction.</p>
                 </div>
-                <div class="w-[220px] font-bold text-[11px] border border-black">
-                    <div class="flex justify-between p-1 border-b"><span>Taxable Amount</span><span id="sum_taxable">0.00</span></div>
-                    <div class="flex justify-between p-1 border-b font-normal"><span>Add : CGST</span><span id="sum_cgst">0.00</span></div>
-                    <div class="flex justify-between p-1 border-b font-normal"><span>Add : SGST</span><span id="sum_sgst">0.00</span></div>
-                    <div class="flex justify-between p-1 border-b"><span>Tax Amount</span><span id="sum_tax">0.00</span></div>
-                    <div class="flex justify-between p-1 bg-gray-200 text-sm font-black italic"><span>Total Amount</span><span id="sum_grand">₹ 0.00</span></div>
+                <div class="w-[220px] font-bold text-[11px] border border-black bg-white">
+                    <div class="flex justify-between p-1.5 border-b"><span>Taxable Amount</span><span id="sum_taxable">0.00</span></div>
+                    <div class="flex justify-between p-1.5 border-b font-normal"><span>Add : CGST</span><span id="sum_cgst">0.00</span></div>
+                    <div class="flex justify-between p-1.5 border-b font-normal"><span>Add : SGST</span><span id="sum_sgst">0.00</span></div>
+                    <div class="flex justify-between p-1.5 border-b"><span>Tax Amount</span><span id="sum_tax">0.00</span></div>
+                    <div class="flex justify-between p-2 bg-gray-100 text-sm font-black italic"><span>Total Amount</span><span id="sum_grand">₹ 0.00</span></div>
                 </div>
             </div>
 
-            <!-- Footer Signature -->
+            <!-- Signature Section -->
             <div class="mt-12 flex justify-end">
-                <div class="text-center w-[200px] border border-black p-4">
+                <div class="text-center w-[220px] border border-black p-4">
                     <p class="text-[10px] uppercase font-bold">For, <span id="footer_shop">SHOP NAME</span></p>
-                    <div class="h-12"></div>
+                    <div class="h-16"></div>
                     <p class="text-[10px] border-t border-black pt-1">Authorized Signature</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Reports (Hidden) -->
-    <div id="reports-panel" class="max-w-4xl mx-auto mt-20 p-4 bg-white rounded shadow-xl hidden no-print">
-        <h2 class="font-bold border-b mb-4">Sale History</h2>
+    <!-- Sales History (Hidden) -->
+    <div id="reports-panel" class="max-w-4xl mx-auto mt-24 p-6 bg-white rounded shadow-xl hidden no-print">
+        <h2 class="font-bold border-b mb-4 uppercase text-blue-700">Sale History (Pichle Bill)</h2>
         <div id="history-list" class="space-y-2"></div>
     </div>
 
     <script>
         let items = [];
-        let history = JSON.parse(localStorage.getItem('erp_v6_db')) || [];
+        let history = JSON.parse(localStorage.getItem('erp_v7_db')) || [];
 
         window.onload = function() {
             document.getElementById('s_name').value = localStorage.getItem('s_n') || 'I COMPUTER';
-            document.getElementById('s_addr').value = localStorage.getItem('s_a') || 'NAGPUR';
-            document.getElementById('out_date').innerText = new Date().toLocaleDateString('en-IN');
+            document.getElementById('s_addr').value = localStorage.getItem('s_a') || 'Address Details...';
+            document.getElementById('s_gst').value = localStorage.getItem('s_g') || '27XXXXX';
+            document.getElementById('out_date').innerText = new Date().toLocaleDateString('en-GB');
             upd();
         };
 
-        function showSection(type) {
+        function showSec(type) {
             document.getElementById('input-panel').classList.toggle('hidden', type !== 'input');
             document.getElementById('reports-panel').classList.toggle('hidden', type !== 'reports');
             if(type === 'reports') renderHistory();
@@ -182,16 +200,24 @@
         function upd() {
             const sn = document.getElementById('s_name').value;
             const sa = document.getElementById('s_addr').value;
-            localStorage.setItem('s_n', sn); localStorage.setItem('s_a', sa);
+            const sg = document.getElementById('s_gst').value;
+            const bType = document.getElementById('bill_type').value;
+
+            localStorage.setItem('s_n', sn); 
+            localStorage.setItem('s_a', sa);
+            localStorage.setItem('s_g', sg);
             
             document.getElementById('out_s_name').innerText = sn;
             document.getElementById('footer_shop').innerText = sn;
             document.getElementById('out_s_addr').innerText = sa;
-            document.getElementById('out_title').innerText = document.getElementById('bill_type').value;
+            document.getElementById('out_s_gst').innerText = sg || 'PENDING';
+            document.getElementById('out_title').innerText = bType;
+            document.getElementById('out_lbl_no').innerText = bType === 'QUOTATION' ? 'Quotation No' : 'Invoice No';
+
             document.getElementById('out_c_name').innerText = document.getElementById('c_name').value || 'CASH CUSTOMER';
             document.getElementById('out_ship_name').innerText = document.getElementById('c_name').value || 'CASH CUSTOMER';
             document.getElementById('out_c_addr').innerText = document.getElementById('c_addr').value || 'NA';
-            document.getElementById('out_c_gst').innerText = "GSTIN: " + (document.getElementById('c_gst').value || '-');
+            document.getElementById('out_c_gst').innerText = document.getElementById('c_gst').value || '-';
         }
 
         function addItem() {
@@ -199,7 +225,7 @@
             const r = parseFloat(document.getElementById('i_rate').value);
             const q = parseFloat(document.getElementById('i_qty').value);
             const g = parseInt(document.getElementById('i_gst').value);
-            if(!n || !r || !q) return alert("Details bhariye!");
+            if(!n || isNaN(r) || isNaN(q)) return alert("Description, Rate aur Qty bhariye!");
 
             const taxable = r * q;
             const taxTotal = taxable * (g/100);
@@ -214,12 +240,12 @@
         function renderTable() {
             let h = '', st = 0, tax = 0, gt = 0;
             items.forEach((it, i) => {
-                h += `<tr class="text-center">
+                h += `<tr>
                     <td>${i+1}</td>
                     <td class="text-left font-bold uppercase">${it.name}</td>
                     <td>${it.qty}</td>
                     <td>${it.rate.toFixed(2)}</td>
-                    <td class="font-bold bg-yellow-50">${it.taxable.toFixed(2)}</td>
+                    <td class="font-bold">${it.taxable.toFixed(2)}</td>
                     <td>${it.gst/2}%</td><td>${it.cgst.toFixed(2)}</td>
                     <td>${it.gst/2}%</td><td>${it.sgst.toFixed(2)}</td>
                     <td class="font-bold">${it.total.toFixed(2)}</td>
@@ -239,35 +265,36 @@
             const element = document.getElementById('invoice-page');
             const opt = {
                 margin: 0,
-                filename: `Bill_${document.getElementById('c_name').value || 'Invoice'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                filename: `${document.getElementById('bill_type').value}_${document.getElementById('c_name').value || 'ERP'}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'avoid-all' }
             };
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Save to history after PDF
-                const inv = { date: new Date().toLocaleString(), cust: document.getElementById('c_name').value, total: document.getElementById('sum_grand').innerText, items: [...items] };
-                history.push(inv);
-                localStorage.setItem('erp_v6_db', JSON.stringify(history));
-            });
+            html2pdf().set(opt).from(element).save();
+
+            // Save History
+            const inv = { date: new Date().toLocaleString(), cust: document.getElementById('c_name').value, total: document.getElementById('sum_grand').innerText };
+            history.push(inv);
+            localStorage.setItem('erp_v7_db', JSON.stringify(history));
         }
 
         function shareWA() {
             const ph = document.getElementById('c_phone').value;
-            if(!ph) return alert("Pehle phone number daalein!");
-            const msg = `🧾 *Invoice from ${document.getElementById('s_name').value}*%0A*Total Amount:* ${document.getElementById('sum_grand').innerText}%0A%0A_Aapka bill download ho chuka hai, kripya share karein._`;
+            if(!ph) return alert("Kripya Customer WhatsApp Number daalein!");
+            const msg = `🧾 *${document.getElementById('bill_type').value} from ${document.getElementById('s_name').value}*%0A*Total Amount:* ${document.getElementById('sum_grand').innerText}%0A%0A_Aapka bill PDF download ho chuka hai, kripya ise share karein._`;
             window.open(`https://wa.me/91${ph}?text=${msg}`, '_blank');
         }
 
         function renderHistory() {
             let h = '';
             history.slice().reverse().forEach((inv, i) => {
-                h += `<div class="p-3 border rounded flex justify-between items-center bg-gray-50">
+                h += `<div class="p-3 border rounded flex justify-between items-center bg-blue-50">
                     <div><b>${inv.cust || 'Cash'}</b><br><small>${inv.date}</small></div>
-                    <div class="font-bold text-blue-700">${inv.total}</div>
+                    <div class="font-bold text-red-700">${inv.total}</div>
                 </div>`;
             });
-            document.getElementById('history-list').innerHTML = h || 'No history found.';
+            document.getElementById('history-list').innerHTML = h || 'Abhi tak koi sale nahi hui.';
         }
     </script>
 </body>
