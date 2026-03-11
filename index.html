@@ -1,57 +1,45 @@
 <!DOCTYPE html>
-<html lang="hi">
-
+<html lang="en">
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>ERP PRO</title>
+<title>GST Quotation</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 
-/* CSS */
-
 body{
-font-family:Segoe UI;
-background:#f3f4f6;
-padding-bottom:80px;
+font-family:Arial;
+background:#f2f2f2;
 }
 
-.navbar{
-position:fixed;
-bottom:0;
-width:100%;
-background:#111;
-display:flex;
+#invoice{
+width:210mm;
+min-height:297mm;
+margin:auto;
+background:white;
+padding:25px;
 }
 
-.navbtn{
-flex:1;
-color:#888;
-padding:12px;
-font-size:12px;
-text-align:center;
-}
-
-.active{
-color:white;
-border-top:3px solid #3b82f6;
-}
-
-.table{
+table{
 width:100%;
 border-collapse:collapse;
+font-size:12px;
 }
 
-.table th,.table td{
-border:1px solid black;
+th,td{
+border:1px solid #999;
 padding:6px;
-font-size:12px;
+}
+
+thead{
+background:#f0f0f0;
+}
+
+.totalbox{
+background:#efe6c8;
 }
 
 </style>
@@ -60,148 +48,169 @@ font-size:12px;
 
 <body>
 
-<div class="max-w-4xl mx-auto p-4">
+<div id="invoice">
 
-<h1 class="text-3xl font-bold text-center mb-4">
-ERP PRO
-</h1>
+<!-- HEADER -->
+
+<div class="flex justify-between mb-6">
+
+<div>
+
+<h1 class="text-2xl font-bold">I COMPUTER</h1>
+
+<p>
+HANUMAN NAGAR 24B 1 ST FLOOR<br>
+Nagpur Maharashtra 440024<br>
+GSTIN : 27CAFPS2851G1ZJ
+</p>
+
+</div>
+
+<div class="text-right">
+
+<h2 class="text-3xl font-light">Quotation</h2>
+
+<p>
+Quotation No : <span id="qno">001</span><br>
+Date : <span id="date"></span>
+</p>
+
+</div>
+
+</div>
 
 <!-- CUSTOMER -->
 
-<div class="bg-white p-4 rounded shadow mb-4">
+<div class="mb-4">
 
-<input id="custName" placeholder="Customer Name"
-class="border p-2 w-full mb-2">
+<b>Quotation For :</b><br>
 
-<input id="custPhone" placeholder="WhatsApp Number"
-class="border p-2 w-full">
+<input id="customer" placeholder="Customer Name"
+class="border p-1 w-1/2">
 
 </div>
 
 <!-- ADD ITEM -->
 
-<div class="bg-white p-4 rounded shadow mb-4">
+<div class="mb-4">
 
-<input id="itemName" placeholder="Item Name"
-class="border p-2 w-full mb-2">
+<input id="item" placeholder="Item Name" class="border p-1">
+<input id="rate" placeholder="Rate" type="number" class="border p-1">
+<input id="qty" placeholder="Qty" type="number" class="border p-1">
 
-<div class="grid grid-cols-2 gap-2">
-
-<input id="itemRate" placeholder="Rate"
-class="border p-2">
-
-<input id="itemQty" placeholder="Qty"
-class="border p-2">
-
-</div>
-
-<button onclick="addItem()"
-class="bg-blue-600 text-white w-full p-3 mt-3 rounded">
-
-Add Item
-
+<button onclick="addItem()" class="bg-blue-600 text-white px-3 py-1">
+Add
 </button>
 
 </div>
 
-<!-- BILL -->
+<!-- TABLE -->
 
-<div id="invoicePage"
-class="bg-white p-4 rounded shadow">
-
-<table class="table">
+<table>
 
 <thead>
 
 <tr>
 
-<th>#</th>
-<th>Item</th>
-<th>Qty</th>
+<th>Sr</th>
+<th>Name of Product</th>
+<th>QTY</th>
 <th>Rate</th>
+<th>Taxable</th>
+<th>CGST</th>
+<th>SGST</th>
 <th>Total</th>
 
 </tr>
 
 </thead>
 
-<tbody id="billItems"></tbody>
+<tbody id="items"></tbody>
 
 </table>
 
-<div class="text-right mt-4 font-bold text-lg">
+<!-- TOTALS -->
 
-Total ₹ <span id="grandTotal">0</span>
+<div class="flex justify-end mt-4">
 
+<table class="w-64">
+
+<tr class="totalbox">
+<td>Taxable Amount</td>
+<td id="taxable">0</td>
+</tr>
+
+<tr>
+<td>CGST</td>
+<td id="cgst">0</td>
+</tr>
+
+<tr>
+<td>SGST</td>
+<td id="sgst">0</td>
+</tr>
+
+<tr class="totalbox font-bold">
+<td>Total</td>
+<td id="grand">0</td>
+</tr>
+
+</table>
+
+</div>
+
+<div class="mt-10 text-right">
+Authorized Signature
 </div>
 
 </div>
 
-<!-- ACTION BUTTONS -->
+<div class="text-center mt-4">
 
-<div class="grid grid-cols-2 gap-2 mt-4">
-
-<button onclick="downloadPDF()"
-class="bg-red-600 text-white p-3 rounded">
-
+<button onclick="downloadPDF()" class="bg-red-600 text-white px-6 py-2">
 Download PDF
-
 </button>
-
-<button onclick="sendWA()"
-class="bg-green-600 text-white p-3 rounded">
-
-WhatsApp
-
-</button>
-
-</div>
-
-</div>
-
-<!-- NAVBAR -->
-
-<div class="navbar">
-
-<div class="navbtn active">Entry</div>
-<div class="navbtn">Reports</div>
-<div class="navbtn">Settings</div>
 
 </div>
 
 <script>
 
-/* DATABASE */
+document.getElementById("date").innerText=
+new Date().toLocaleDateString();
 
 let items=[];
-let sales=JSON.parse(localStorage.getItem("sales"))||[];
-
-/* ADD ITEM */
 
 function addItem(){
 
-const name=document.getElementById("itemName").value;
-const rate=parseFloat(document.getElementById("itemRate").value);
-const qty=parseFloat(document.getElementById("itemQty").value);
+const name=document.getElementById("item").value;
+const rate=parseFloat(document.getElementById("rate").value);
+const qty=parseFloat(document.getElementById("qty").value);
 
-if(!name||!rate||!qty){
-alert("Fill all fields");
-return;
+const taxable=rate*qty;
+const gst=taxable*0.18;
+
+items.push({
+
+name,
+rate,
+qty,
+taxable,
+cgst:gst/2,
+sgst:gst/2,
+total:taxable+gst
+
+});
+
+render();
+
 }
 
-const total=rate*qty;
-
-items.push({name,rate,qty,total});
-
-renderItems();
-
-}
-
-/* RENDER TABLE */
-
-function renderItems(){
+function render(){
 
 let html="";
+let taxable=0;
+let cgst=0;
+let sgst=0;
 let grand=0;
 
 items.forEach((it,i)=>{
@@ -211,74 +220,39 @@ html+=`
 <tr>
 
 <td>${i+1}</td>
-
 <td>${it.name}</td>
-
 <td>${it.qty}</td>
-
 <td>${it.rate}</td>
-
+<td>${it.taxable}</td>
+<td>${it.cgst}</td>
+<td>${it.sgst}</td>
 <td>${it.total}</td>
 
 </tr>
 
 `;
 
+taxable+=it.taxable;
+cgst+=it.cgst;
+sgst+=it.sgst;
 grand+=it.total;
 
 });
 
-document.getElementById("billItems").innerHTML=html;
+document.getElementById("items").innerHTML=html;
 
-document.getElementById("grandTotal").innerText=grand;
+document.getElementById("taxable").innerText=taxable;
+document.getElementById("cgst").innerText=cgst;
+document.getElementById("sgst").innerText=sgst;
+document.getElementById("grand").innerText=grand;
 
 }
-
-/* PDF */
 
 function downloadPDF(){
 
 html2pdf()
-.from(document.getElementById("invoicePage"))
-.save("invoice.pdf");
-
-}
-
-/* SAVE SALE */
-
-function saveSale(){
-
-const total=document.getElementById("grandTotal").innerText;
-
-const cust=document.getElementById("custName").value||"Cash";
-
-sales.push({
-
-customer:cust,
-total:total,
-date:new Date().toLocaleDateString()
-
-});
-
-localStorage.setItem("sales",JSON.stringify(sales));
-
-}
-
-/* WHATSAPP */
-
-function sendWA(){
-
-saveSale();
-
-const phone=document.getElementById("custPhone").value;
-
-const total=document.getElementById("grandTotal").innerText;
-
-window.open(
-
-`https://wa.me/91${phone}?text=Bill Amount ₹${total}`
-
-);
+.from(document.getElementById("invoice"))
+.save("quotation.pdf");
 
 }
 
