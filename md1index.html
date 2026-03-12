@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ERP Pro v22 - Full Purchase & History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); border-radius: 20px 20px 0 0; border-top: 1px solid #e2e8f0; }
+        .nav-btn { flex: 1; color: #94a3b8; text-align: center; padding: 12px 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: none; background: transparent; transition: 0.3s; }
+        .nav-btn.active { color: #4f46e5; }
+        .nav-btn.active b { background: #eef2ff; padding: 10px 18px; border-radius: 16px; display: inline-block; margin-bottom: 4px; }
+        @media (min-width: 1024px) { .desktop-layout { display: grid; grid-template-cols: 400px 1fr; gap: 20px; max-width: 1300px; margin: 20px auto; } .bottom-nav { width: 400px; left: 0; border-radius: 0 20px 0 0; } #sec-view { display: block !important; } }
+        .bill-wrapper { width: 100%; display: flex; justify-content: center; overflow: hidden; padding: 10px 0; }
+        #invoice-page { background: white; width: 210mm; min-height: 297mm; padding: 12mm; box-sizing: border-box; transform-origin: top center; box-shadow: 0 10px 50px rgba(0,0,0,0.1); }
+        @media (max-width: 800px) { #invoice-page { transform: scale(0.40); margin-bottom: -550px; } }
+        .table-bill { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .table-bill th, .table-bill td { border: 1px solid #000; padding: 6px; font-size: 11px; text-align: center; }
+        .theme-modern th { background: #4f46e5; color: white; border-color: #4f46e5; }
+        @media print { .no-print { display: none !important; } #invoice-page { transform: scale(1) !important; margin: 0 !important; box-shadow: none; border: none; } }
+        #lock-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <h1 style="font-size: 80px;">🔒</h1>
+        <h2 class="text-3xl font-black text-rose-600 mb-2">Service Locked</h2>
+        <p class="text-slate-500 mb-8 font-bold">Aapka trial khatam ho gaya hai.<br>Activate karne ke liye sampark karein.</p>
+        <a id="wa-lock-link" href="#" class="bg-emerald-600 text-white px-10 py-4 rounded-full font-black uppercase shadow-2xl">WhatsApp to Unlock</a>
+    </div>
+
+    <div id="main-app">
+        <div class="bottom-nav no-print">
+            <button onclick="tab('entry')" id="btn-entry" class="nav-btn active"><b>📝</b><br>Entry</button>
+            <button onclick="tab('view')" id="btn-view" class="nav-btn"><b>📄</b><br>Invoice</button>
+            <button onclick="tab('reports')" id="btn-reports" class="nav-btn"><b>📊</b><br>Sales</button>
+            <button onclick="tab('settings')" id="btn-settings" class="nav-btn"><b>⚙️</b><br>Setup</button>
+        </div>
+
+        <div class="desktop-layout">
+            <!-- INPUT FORM -->
+            <div class="no-print-nav-desktop">
+            <section id="sec-entry" class="p-4 space-y-4">
+                <div class="flex bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200">
+                    <button onclick="setGST(true)" id="gst-on" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase bg-indigo-600 text-white">GST Bill</button>
+                    <button onclick="setGST(false)" id="gst-off" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-400">Non-GST</button>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-indigo-500 space-y-3">
+                    <select id="b_type" onchange="sync()" class="w-full bg-slate-50 p-4 rounded-2xl font-bold text-indigo-700 outline-none border-none shadow-inner">
+                        <option value="SALE INVOICE">SALE INVOICE</option>
+                        <option value="PURCHASE BILL">PURCHASE BILL</option>
+                        <option value="QUOTATION">QUOTATION</option>
+                    </select>
+                    <input id="c_name" type="text" placeholder="Grahak/Supplier Name" oninput="sync()" class="w-full bg-slate-50 p-4 rounded-2xl outline-none shadow-inner">
+                    <input id="c_addr" type="text" placeholder="Address" oninput="sync()" class="w-full bg-slate-50 p-4 rounded-2xl outline-none shadow-inner">
+                    <input id="c_gst" type="text" placeholder="GSTIN" oninput="sync()" class="w-full bg-slate-50 p-4 rounded-2xl uppercase font-bold text-indigo-500 shadow-inner">
+                    <input id="c_phone" type="number" placeholder="WhatsApp No" class="w-full bg-slate-50 p-4 rounded-2xl outline-none shadow-inner">
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-emerald-500 space-y-3">
+                    <input id="i_name" type="text" placeholder="Item Name" class="w-full bg-slate-50 p-4 rounded-2xl outline-none shadow-inner">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input id="i_rate" type="number" placeholder="Rate" class="bg-slate-50 p-4 rounded-2xl outline-none shadow-inner font-bold">
+                        <input id="i_qty" type="number" placeholder="Qty" class="bg-slate-50 p-4 rounded-2xl outline-none shadow-inner font-bold">
+                    </div>
+                    <select id="i_slab" class="w-full bg-slate-50 p-4 rounded-2xl font-bold text-slate-600 shadow-inner border-none">
+                        <option value="18">GST 18%</option><option value="12">GST 12%</option><option value="5">GST 5%</option><option value="28">GST 28%</option><option value="0">0%</option>
+                    </select>
+                    <button onclick="addItem()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase shadow-lg">+ Add Item</button>
+                </div>
+                <div id="mini-list" class="hidden bg-white p-4 rounded-2xl border border-indigo-100 flex flex-wrap gap-2"></div>
+            </section>
+            </div>
+
+            <!-- VIEW BILL -->
+            <section id="sec-view" class="p-4 hidden lg:block">
+                <div class="no-print flex justify-center gap-4 mb-6">
+                    <button onclick="downloadPDF()" class="bg-rose-600 text-white px-8 py-3 rounded-2xl font-bold text-xs shadow-xl">PDF</button>
+                    <button onclick="shareWA()" class="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold text-xs shadow-xl">WhatsApp</button>
+                    <button onclick="saveBill()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold text-xs shadow-xl">Save & New</button>
+                </div>
+                <div class="bill-wrapper"><div id="invoice-page" class="theme-modern">
+                    <div class="flex justify-between items-start mb-8 border-b-2 border-indigo-600 pb-6">
+                        <div class="w-2/3"><h1 id="out_s_name" class="text-4xl font-black uppercase text-indigo-900">SHOP NAME</h1><p id="out_s_addr" class="text-[10px] mt-2 font-semibold text-slate-500">Address...</p><p id="out_s_gst_box" class="text-[12px] font-bold mt-2 uppercase text-indigo-600 font-mono">GSTIN: <span id="out_s_gst">-</span></p></div>
+                        <div class="text-right"><h1 id="out_title" class="text-3xl font-black uppercase italic text-indigo-200">INVOICE</h1><p class="text-[11px] font-bold mt-4">DATE: <span id="out_date"></span></p><p class="text-[11px] font-bold">NO: <span id="out_no" class="text-indigo-600">#1001</span></p></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-6 text-[11px] border-b pb-4"><div class="bg-slate-50 p-4 rounded-2xl border border-slate-100"><p class="font-bold underline text-slate-400 mb-1 italic uppercase">Bill To / From:</p><p id="out_c_name" class="font-black text-sm uppercase text-slate-800">CASH CUSTOMER</p><p id="out_c_addr" class="text-slate-500 font-semibold italic">Address...</p><p id="out_c_gst_box" class="font-bold uppercase mt-2 text-indigo-700">GST: <span id="out_c_gst">-</span></p></div><div class="text-right p-4 italic text-slate-400">Details Verified</div></div>
+                    <table class="table-bill"><thead id="table-head"></thead><tbody id="billBody"></tbody></table>
+                    <div class="flex justify-between mt-8 border-t-2 border-indigo-600 pt-6 font-bold"><div class="w-1/2 text-[9px] text-slate-400 italic"><p class="underline text-slate-800 font-black uppercase">Terms:</p><p id="out_terms">1. Goods sold not returned.</p></div><div class="w-[240px] font-bold text-[11px] border-2 border-indigo-600 p-2 rounded-xl bg-slate-50"><div id="summary-taxable" class="flex justify-between p-1.5 border-b"><span>Taxable Value</span><span id="sum_taxable">0.00</span></div><div id="summary-gst" class="flex justify-between p-1.5 font-normal text-slate-400 border-b"><span>GST Amt</span><span id="sum_tax">0.00</span></div><div class="flex justify-between p-3 bg-indigo-900 text-white text-lg font-black italic rounded-lg mt-2 uppercase shadow-lg"><span>Total</span><span id="sum_grand">₹ 0.00</span></div></div></div>
+                    <div class="mt-16 flex justify-end"><div class="text-center w-[200px] border-2 border-slate-800 p-4 bg-slate-50 rounded-xl"><p class="text-[9px] font-black uppercase italic">For, <span id="footer_shop">SHOP NAME</span></p><div class="h-12"></div><p class="text-[8px] border-t border-slate-800 pt-1 font-bold">Authorized Signature</p></div></div>
+                </div></div>
+            </section>
+
+            <!-- REPORTS -->
+            <section id="sec-reports" class="hidden p-4 max-w-xl mx-auto space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-indigo-600 text-white p-4 rounded-3xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold opacity-60">Total Sales</p><h2 id="total-sales" class="text-xl font-black">₹0.00</h2></div>
+                    <div class="bg-rose-600 text-white p-4 rounded-3xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold opacity-60">Total Purchases</p><h2 id="total-pur" class="text-xl font-black">₹0.00</h2></div>
+                </div>
+                <div id="history-list" class="space-y-3"></div>
+                <button onclick="clearHistory()" class="w-full bg-slate-200 text-slate-600 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest">Delete All Data</button>
+            </section>
+
+            <!-- SETUP -->
+            <section id="sec-settings" class="hidden p-4 max-w-xl mx-auto"><div class="bg-white p-8 rounded-[2.5rem] shadow-2xl space-y-4 border-t-8 border-indigo-600"><input id="set_name" type="text" placeholder="Shop Name" class="w-full bg-slate-50 p-4 rounded-2xl font-bold"><input id="set_addr" type="text" placeholder="Shop Address" class="w-full bg-slate-50 p-4 rounded-2xl"><input id="set_gst" type="text" placeholder="Your GSTIN" class="w-full bg-slate-50 p-4 rounded-2xl uppercase font-bold text-indigo-600"><textarea id="set_terms" class="w-full bg-slate-50 p-4 rounded-2xl text-[10px]" rows="3" placeholder="Terms & Conditions"></textarea><button onclick="saveSetup()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black uppercase">Update Shop Profile</button></div></section>
+        </div>
+    </div>
+
+    <script>
+        // --- MASTER CONFIG ---
+        const EXPIRY_DATE = "2026-03-30"; // Client trial date
+        const MY_PHONE = "919022609138"; // Your WhatsApp
+
+        let items = [];
+        let gstMode = true;
+        let db = JSON.parse(localStorage.getItem('erp_v22_db')) || [];
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            if (today > EXPIRY_DATE) {
+                document.getElementById('main-app').style.display = 'none';
+                document.getElementById('lock-screen').style.display = 'flex';
+                document.getElementById('wa-lock-link').href = `https://wa.me/${MY_PHONE}?text=Activate Billing Software`;
+            }
+            document.getElementById('set_name').value = localStorage.getItem('sn') || 'I COMPUTER';
+            document.getElementById('set_addr').value = localStorage.getItem('sa') || 'NAGPUR';
+            document.getElementById('set_gst').value = localStorage.getItem('sg') || '27XXXXX';
+            document.getElementById('set_terms').value = localStorage.getItem('st') || '1. Goods sold not returned.';
+            document.getElementById('out_date').innerText = new Date().toLocaleDateString('en-GB');
+            sync();
+        };
+
+        function setGST(status) {
+            gstMode = status;
+            document.getElementById('gst-on').className = status ? 'flex-1 py-3 rounded-xl font-bold text-[10px] uppercase bg-indigo-600 text-white shadow-lg' : 'flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-400';
+            document.getElementById('gst-off').className = !status ? 'flex-1 py-3 rounded-xl font-bold text-[10px] uppercase bg-indigo-600 text-white shadow-lg' : 'flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-400';
+            document.getElementById('c_gst').classList.toggle('hidden', !status);
+            sync();
+        }
+
+        function tab(id) {
+            ['entry','view','reports','settings'].forEach(s => {
+                document.getElementById('sec-'+s).classList.add('hidden');
+                document.getElementById('btn-'+s).classList.remove('active');
+            });
+            document.getElementById('sec-'+id).classList.remove('hidden');
+            document.getElementById('btn-'+id).classList.add('active');
+            if(id === 'view') renderTable();
+            if(id === 'reports') renderHistory();
+        }
+
+        function addItem() {
+            const n = document.getElementById('i_name').value, r = parseFloat(document.getElementById('i_rate').value), q = parseFloat(document.getElementById('i_qty').value), s = parseInt(document.getElementById('i_slab').value);
+            if(!n || isNaN(r)) return alert("Data bhariye!");
+            const taxable = r * q, tax = gstMode ? taxable * (s/100) : 0;
+            items.push({ name: n, rate: r, qty: q, slab: s, taxable, taxAmt: tax, total: taxable + tax });
+            renderMiniTags();
+            document.getElementById('i_name').value='';document.getElementById('i_rate').value='';document.getElementById('i_qty').value='';
+        }
+
+        function renderMiniTags() {
+            const div = document.getElementById('mini-list');
+            div.classList.toggle('hidden', items.length === 0);
+            div.innerHTML = items.map((it, i) => `<span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[9px] font-bold border border-indigo-100">${it.name} <button onclick="delItem(${i})" class="text-rose-500">×</button></span>`).join('');
+        }
+
+        function delItem(i) { items.splice(i, 1); renderMiniTags(); }
+
+        function renderTable() {
+            const head = document.getElementById('table-head');
+            if(gstMode) { head.innerHTML = `<tr><th>Sr.</th><th class="text-left px-2 w-1/2">Item Description</th><th>Qty</th><th>Rate</th><th>Taxable</th><th colspan="2">CGST</th><th colspan="2">SGST</th><th>Total</th></tr><tr class="text-[8px] uppercase"><th></th><th></th><th></th><th></th><th></th><th>Rate</th><th>Amt</th><th>Rate</th><th>Amt</th><th></th></tr>`; }
+            else { head.innerHTML = `<tr><th>Sr.</th><th class="text-left px-2 w-1/2">Product Name</th><th>Qty</th><th>Rate</th><th>Total</th></tr>`; }
+            let h = '', st = 0, tx = 0, gt = 0;
+            items.forEach((it, i) => {
+                if(gstMode) { h += `<tr><td>${i+1}</td><td class="text-left px-2 font-bold uppercase">${it.name}</td><td>${it.qty}</td><td>${it.rate.toFixed(2)}</td><td>${it.taxable.toFixed(2)}</td><td>${it.slab/2}%</td><td>${(it.taxAmt/2).toFixed(2)}</td><td>${it.slab/2}%</td><td>${(it.taxAmt/2).toFixed(2)}</td><td class="font-black font-black">₹${it.total.toFixed(2)}</td></tr>`; }
+                else { h += `<tr><td>${i+1}</td><td class="text-left px-2 font-bold uppercase">${it.name}</td><td>${it.qty}</td><td>${it.rate.toFixed(2)}</td><td class="font-black">₹${it.total.toFixed(2)}</td></tr>`; }
+                st += it.taxable; tx += it.taxAmt; gt += it.total;
+            });
+            document.getElementById('billBody').innerHTML = h;
+            document.getElementById('sum_taxable').innerText = st.toFixed(2);
+            document.getElementById('sum_tax').innerText = tx.toFixed(2);
+            document.getElementById('sum_grand').innerText = "₹ " + gt.toFixed(2);
+            document.getElementById('summary-taxable').classList.toggle('hidden', !gstMode);
+            document.getElementById('summary-gst').classList.toggle('hidden', !gstMode);
+            document.getElementById('out_no').innerText = "#" + (1000 + db.length);
+            sync();
+        }
+
+        function sync() {
+            document.getElementById('out_s_name').innerText = document.getElementById('set_name').value;
+            document.getElementById('out_s_addr').innerText = document.getElementById('set_addr').value;
+            document.getElementById('out_s_gst').innerText = document.getElementById('set_gst').value;
+            document.getElementById('out_title').innerText = document.getElementById('b_type').value;
+            document.getElementById('out_c_name').innerText = document.getElementById('c_name').value || 'CASH CUSTOMER';
+            document.getElementById('out_c_addr').innerText = document.getElementById('c_addr').value || '-';
+            document.getElementById('out_c_gst').innerText = document.getElementById('c_gst').value || 'UNREGISTERED';
+            document.getElementById('out_terms').innerText = document.getElementById('set_terms').value;
+            document.getElementById('footer_shop').innerText = document.getElementById('set_name').value;
+        }
+
+        function saveBill() {
+            if(items.length === 0) return alert("Items Empty!");
+            const inv = {
+                id: document.getElementById('out_no').innerText,
+                type: document.getElementById('b_type').value,
+                cust: document.getElementById('c_name').value || 'Cash',
+                addr: document.getElementById('c_addr').value,
+                gstin: document.getElementById('c_gst').value,
+                items: [...items],
+                total: document.getElementById('sum_grand').innerText,
+                date: new Date().toLocaleDateString('en-GB')
+            };
+            db.push(inv);
+            localStorage.setItem('erp_v22_db', JSON.stringify(db));
+            alert("Bill Saved to History!");
+            location.reload();
+        }
+
+        function renderHistory() {
+            let sTotal = 0, pTotal = 0;
+            const list = db.slice().reverse().map((inv, idx) => {
+                const totalNum = parseFloat(inv.total.replace('₹ ',''));
+                if(inv.type === 'PURCHASE BILL') pTotal += totalNum; else sTotal += totalNum;
+                return `
+                <div class="p-5 bg-white rounded-3xl shadow flex justify-between items-center border-l-[12px] ${inv.type === 'PURCHASE BILL' ? 'border-rose-500' : 'border-indigo-600'}">
+                    <div class="text-xs">
+                        <p class="font-black text-slate-800 uppercase">${inv.cust}</p>
+                        <p class="text-slate-400 font-bold">${inv.date} | ${inv.type}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-indigo-800 font-black mr-2">${inv.total}</span>
+                        <button onclick="reopen(${db.length - 1 - idx})" class="bg-indigo-50 text-indigo-600 p-2 rounded-xl text-[10px] font-bold">👁️ View</button>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('history-list').innerHTML = list || '<p class="text-center p-10 text-slate-400">No Records</p>';
+            document.getElementById('total-sales').innerText = "₹" + sTotal.toFixed(2);
+            document.getElementById('total-pur').innerText = "₹" + pTotal.toFixed(2);
+        }
+
+        function reopen(idx) {
+            const inv = db[idx];
+            items = inv.items;
+            document.getElementById('c_name').value = inv.cust;
+            document.getElementById('c_addr').value = inv.addr;
+            document.getElementById('c_gst').value = inv.gstin;
+            document.getElementById('b_type').value = inv.type;
+            tab('view');
+            renderTable();
+        }
+
+        function saveSetup() {
+            localStorage.setItem('sn', document.getElementById('set_name').value);
+            localStorage.setItem('sa', document.getElementById('set_addr').value);
+            localStorage.setItem('sg', document.getElementById('set_gst').value);
+            localStorage.setItem('st', document.getElementById('set_terms').value);
+            alert("Setup Updated!");
+            tab('entry');
+        }
+
+        function downloadPDF() { html2pdf().set({margin:0, filename: 'Invoice.pdf', image:{type:'jpeg', quality:1}, html2canvas:{scale:3}, jsPDF:{unit:'mm', format:'a4', orientation:'portrait'}}).from(document.getElementById('invoice-page')).save(); }
+        function shareWA() { window.open(`https://wa.me/91${document.getElementById('c_phone').value}?text=Bill Details: ${document.getElementById('sum_grand').innerText}`, '_blank'); }
+        function clearHistory() { if(confirm("Saara data delete karein?")) { localStorage.removeItem('erp_v22_db'); db = []; renderHistory(); } }
+    </script>
+</body>
+</html>
