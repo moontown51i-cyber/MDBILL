@@ -3,141 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bharat Vyapar - All In One Billing</title>
+    <title>Vyapar Pro - All In One</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @media print {
-            .no-print { display: none; }
-            .print-only { display: block !important; }
-        }
-        .print-only { display: none; }
+        @media print { .no-print { display: none; } .print-area { display: block !important; width: 100%; } }
+        .hidden { display: none; }
+        #lock-screen { z-index: 9999; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-50 text-gray-800">
 
-    <!-- Sidebar & Main Content Layout -->
-    <div class="flex h-screen overflow-hidden">
+    <!-- EXPIRY LOCK SCREEN -->
+    <div id="lock-screen" class="fixed inset-0 bg-indigo-900 flex flex-col items-center justify-center text-white p-6 hidden">
+        <i class="fas fa-lock text-6xl mb-4 text-red-400"></i>
+        <h1 class="text-3xl font-bold mb-2 text-center">Software Expired!</h1>
+        <p class="text-indigo-200 mb-6 text-center">Kripya admin se sampark karein ya payment karein.</p>
+        <input type="password" id="unlock-key" placeholder="Enter Unlock Key" class="p-3 rounded text-black mb-4 w-64 text-center">
+        <button onclick="checkUnlock()" class="bg-red-500 hover:bg-red-600 px-8 py-2 rounded-lg font-bold">Unlock Now</button>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="main-app" class="flex flex-col md:flex-row min-h-screen">
         
-        <!-- Sidebar (Navigation) -->
-        <div class="w-64 bg-indigo-900 text-white flex-shrink-0 no-print">
-            <div class="p-6 text-2xl font-bold border-b border-indigo-800">Bharat Billing</div>
-            <nav class="mt-6">
-                <a href="#" onclick="showSection('dashboard')" class="block py-3 px-6 hover:bg-indigo-800 border-l-4 border-transparent hover:border-yellow-400">Dashboard</a>
-                <a href="#" onclick="showSection('billing')" class="block py-3 px-6 hover:bg-indigo-800 border-l-4 border-transparent hover:border-yellow-400">Naya Bill (Invoice)</a>
-                <a href="#" onclick="showSection('inventory')" class="block py-3 px-6 hover:bg-indigo-800 border-l-4 border-transparent hover:border-yellow-400">Inventory (Stock)</a>
-                <a href="#" onclick="showSection('customers')" class="block py-3 px-6 hover:bg-indigo-800 border-l-4 border-transparent hover:border-yellow-400">Customers</a>
+        <!-- SIDEBAR (Desktop) -->
+        <div class="no-print w-64 bg-indigo-800 text-white flex-shrink-0 hidden md:block">
+            <div class="p-5 text-2xl font-bold border-b border-indigo-700 flex items-center">
+                <i class="fas fa-store mr-3"></i> Vyapar Pro
+            </div>
+            <nav class="mt-4">
+                <a href="#" onclick="showTab('dashboard')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-chart-line mr-3"></i> Dashboard</a>
+                <a href="#" onclick="showTab('sale')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-file-invoice-dollar mr-3"></i> Sales (Bikri)</a>
+                <a href="#" onclick="showTab('purchase')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-shopping-cart mr-3"></i> Purchase</a>
+                <a href="#" onclick="showTab('quotation')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-file-alt mr-3"></i> Quotation</a>
+                <a href="#" onclick="showTab('inventory')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-boxes mr-3"></i> Inventory</a>
+                <a href="#" onclick="showTab('settings')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-cog mr-3"></i> Profile Settings</a>
             </nav>
         </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-y-auto">
+        <!-- MOBILE BOTTOM NAV -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-indigo-800 text-white flex justify-around p-3 no-print z-50">
+            <button onclick="showTab('dashboard')"><i class="fas fa-home"></i></button>
+            <button onclick="showTab('sale')"><i class="fas fa-plus-circle text-xl"></i></button>
+            <button onclick="showTab('inventory')"><i class="fas fa-box"></i></button>
+            <button onclick="showTab('settings')"><i class="fas fa-user-cog"></i></button>
+        </div>
+
+        <!-- CONTENT AREA -->
+        <div class="flex-1 pb-20 md:pb-0 overflow-y-auto">
             
-            <!-- Top Header -->
-            <header class="bg-white shadow-sm p-4 flex justify-between items-center no-print">
-                <h1 id="section-title" class="text-xl font-semibold text-gray-800">Dashboard</h1>
-                <button onclick="window.print()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Print Report</button>
+            <!-- HEADER -->
+            <header class="bg-white shadow p-4 flex justify-between items-center no-print">
+                <h2 id="tab-title" class="text-xl font-bold">Dashboard</h2>
+                <div id="biz-name-display" class="font-bold text-indigo-600">My Business</div>
             </header>
 
-            <main class="p-6">
+            <main class="p-4 md:p-8">
 
-                <!-- DASHBOARD SECTION -->
-                <section id="dashboard" class="content-section">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-green-500">
-                            <p class="text-gray-500 text-sm">Kul Bikri (Total Sales)</p>
-                            <h2 class="text-3xl font-bold text-gray-800">₹ <span id="dash-sales">0</span></h2>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-blue-500">
-                            <p class="text-gray-500 text-sm">Items in Stock</p>
-                            <h2 class="text-3xl font-bold text-gray-800" id="dash-stock">0</h2>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-orange-500">
-                            <p class="text-gray-500 text-sm">Total Customers</p>
-                            <h2 class="text-3xl font-bold text-gray-800" id="dash-cust">0</h2>
+                <!-- SETTINGS SECTION -->
+                <section id="settings" class="tab-content hidden">
+                    <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+                        <h3 class="text-lg font-bold border-b pb-2 mb-4">Business Profile Settings</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <input type="text" id="set-biz-name" placeholder="Business Name" class="border p-2 rounded">
+                            <input type="text" id="set-biz-gst" placeholder="Your GST Number" class="border p-2 rounded">
+                            <input type="text" id="set-biz-addr" placeholder="Business Address" class="border p-2 rounded">
+                            <input type="text" id="set-biz-phone" placeholder="Phone Number" class="border p-2 rounded">
+                            <button onclick="saveProfile()" class="bg-green-600 text-white py-2 rounded font-bold">Save Profile</button>
                         </div>
                     </div>
                 </section>
 
-                <!-- BILLING SECTION -->
-                <section id="billing" class="content-section hidden">
-                    <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
-                        <h2 class="text-2xl font-bold mb-6 text-center border-b pb-4">Tax Invoice</h2>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
+                <!-- BILLING SECTION (Common for Sale, Purchase, Quotation) -->
+                <section id="billing-area" class="tab-content hidden">
+                    <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg max-w-5xl mx-auto">
+                        <div class="flex justify-between items-start mb-6 border-b pb-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Customer Name</label>
-                                <input type="text" id="bill-cust-name" placeholder="Customer Name" class="w-full border p-2 rounded">
+                                <h1 id="bill-type-label" class="text-3xl font-bold text-gray-700 uppercase">INVOICE</h1>
+                                <p id="print-biz-name" class="font-bold text-xl mt-2"></p>
+                                <p id="print-biz-details" class="text-sm text-gray-600"></p>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Date</label>
-                                <input type="date" id="bill-date" class="w-full border p-2 rounded">
-                            </div>
-                        </div>
-
-                        <table class="w-full mb-4" id="bill-table">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="p-2 text-left">Item Name</th>
-                                    <th class="p-2 text-left">Qty</th>
-                                    <th class="p-2 text-left">Rate</th>
-                                    <th class="p-2 text-left">GST %</th>
-                                    <th class="p-2 text-left">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bill-items">
-                                <tr>
-                                    <td><input type="text" class="w-full p-1 border" placeholder="Item Name"></td>
-                                    <td><input type="number" class="w-full p-1 border qty" value="1" oninput="calcBill()"></td>
-                                    <td><input type="number" class="w-full p-1 border rate" value="0" oninput="calcBill()"></td>
-                                    <td><input type="number" class="w-full p-1 border gst" value="18" oninput="calcBill()"></td>
-                                    <td class="row-total p-2">0.00</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <button onclick="addRow()" class="bg-green-500 text-white px-3 py-1 rounded text-sm mb-4">+ Add Item</button>
-
-                        <div class="flex justify-end border-t pt-4">
                             <div class="text-right">
-                                <p class="text-lg">Sub Total: ₹ <span id="bill-subtotal">0.00</span></p>
-                                <p class="text-lg font-bold text-indigo-600">Grand Total: ₹ <span id="bill-grandtotal">0.00</span></p>
+                                <input type="date" id="bill-date" class="border p-1 rounded mb-2">
+                                <p class="text-sm">No: #<span id="bill-no">1001</span></p>
                             </div>
                         </div>
-                        <div class="mt-6 no-print">
-                            <button onclick="window.print()" class="w-full bg-indigo-600 text-white py-3 rounded font-bold">Save & Print Bill</button>
+
+                        <!-- CUSTOMER DETAILS -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded">
+                            <input type="text" id="cust-name" placeholder="Customer Name" class="border p-2 rounded w-full">
+                            <input type="text" id="cust-phone" placeholder="Mobile Number" class="border p-2 rounded w-full">
+                            <input type="text" id="cust-gst" placeholder="Customer GST (Optional)" class="border p-2 rounded w-full">
+                            <textarea id="cust-addr" placeholder="Full Address" class="border p-2 rounded w-full md:col-span-3 h-16"></textarea>
+                        </div>
+
+                        <!-- ITEMS TABLE -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full mb-4 min-w-[600px]">
+                                <thead class="bg-indigo-100">
+                                    <tr>
+                                        <th class="p-2 text-left">Description</th>
+                                        <th class="p-2 w-20">Qty</th>
+                                        <th class="p-2 w-32">Rate</th>
+                                        <th class="p-2 w-24">GST %</th>
+                                        <th class="p-2 text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bill-items-body">
+                                    <!-- Row 1 -->
+                                    <tr class="border-b">
+                                        <td><input type="text" class="w-full p-2" placeholder="Item Name"></td>
+                                        <td><input type="number" class="w-full p-2 text-center item-qty" value="1" oninput="calculateBill()"></td>
+                                        <td><input type="number" class="w-full p-2 text-center item-rate" value="0" oninput="calculateBill()"></td>
+                                        <td><input type="number" class="w-full p-2 text-center item-gst" value="18" oninput="calculateBill()"></td>
+                                        <td class="p-2 text-right font-bold row-total">0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button onclick="addRow()" class="no-print bg-indigo-600 text-white px-4 py-1 rounded-full text-sm">+ Add Row</button>
+
+                        <!-- TOTALS -->
+                        <div class="flex justify-end mt-6">
+                            <div class="w-full md:w-64 space-y-2">
+                                <div class="flex justify-between border-b pb-1"><span>Sub Total:</span> <span>₹<span id="sub-total">0.00</span></span></div>
+                                <div class="flex justify-between text-xl font-bold text-indigo-700"><span>Grand Total:</span> <span>₹<span id="grand-total">0.00</span></span></div>
+                                <button onclick="window.print()" class="no-print w-full bg-green-600 text-white py-3 rounded-lg font-bold mt-4">PRINT / SAVE</button>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- INVENTORY SECTION -->
-                <section id="inventory" class="content-section hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-sm">
-                        <div class="flex justify-between mb-4">
-                            <h2 class="text-xl font-bold">Stock Management</h2>
-                            <button onclick="addItem()" class="bg-indigo-600 text-white px-4 py-2 rounded">+ Add New Product</button>
+                <!-- DASHBOARD (Default) -->
+                <section id="dashboard" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-green-500">
+                            <p class="text-sm text-gray-500 uppercase font-bold">Today's Sales</p>
+                            <h2 class="text-2xl font-black mt-1">₹ 24,500</h2>
                         </div>
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="p-3 border">Product Name</th>
-                                    <th class="p-3 border">Stock</th>
-                                    <th class="p-3 border">Price</th>
-                                    <th class="p-3 border">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-list">
-                                <!-- Data will come here from JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- CUSTOMER SECTION -->
-                <section id="customers" class="content-section hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-sm">
-                        <h2 class="text-xl font-bold mb-4">My Customers</h2>
-                        <ul id="customer-list" class="divide-y">
-                            <!-- Data will come here -->
-                        </ul>
+                        <div class="bg-white p-6 rounded shadow border-l-4 border-blue-500">
+                            <p class="text-sm text-gray-500 uppercase font-bold">Total Stock</p>
+                            <h2 class="text-2xl font-black mt-1">1,240</h2>
+                        </div>
                     </div>
                 </section>
 
@@ -146,89 +153,110 @@
     </div>
 
     <script>
-        // Data Store (LocalStorage)
-        let inventory = JSON.parse(localStorage.getItem('inventory')) || [
-            { name: 'Laptop', stock: 10, price: 45000 },
-            { name: 'Mouse', stock: 50, price: 500 }
-        ];
+        // CONFIGURATION: Set Expiry Date Here (Format: YYYY-MM-DD)
+        const EXPIRY_DATE = "2025-12-31"; // Is date ke baad lock ho jayega
+        const UNLOCK_KEY = "admin123";   // Lock kholne ka password
 
-        let sales = JSON.parse(localStorage.getItem('sales')) || 0;
+        window.onload = function() {
+            checkExpiry();
+            loadProfile();
+            document.getElementById('bill-date').valueAsDate = new Date();
+        };
 
-        // Navigation Logic
-        function showSection(id) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById('section-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-            updateDashboard();
-            if(id === 'inventory') renderInventory();
-        }
-
-        // Dashboard Update
-        function updateDashboard() {
-            document.getElementById('dash-sales').innerText = sales;
-            document.getElementById('dash-stock').innerText = inventory.length;
-            document.getElementById('dash-cust').innerText = "12"; // Placeholder
-        }
-
-        // Inventory Logic
-        function renderInventory() {
-            const list = document.getElementById('inventory-list');
-            list.innerHTML = inventory.map((item, index) => `
-                <tr>
-                    <td class="p-3 border">${item.name}</td>
-                    <td class="p-3 border">${item.stock}</td>
-                    <td class="p-3 border">₹${item.price}</td>
-                    <td class="p-3 border"><button class="text-red-500" onclick="deleteItem(${index})">Delete</button></td>
-                </tr>
-            `).join('');
-        }
-
-        function addItem() {
-            const name = prompt("Product Name:");
-            const price = prompt("Price:");
-            if(name && price) {
-                inventory.push({ name, stock: 0, price: parseInt(price) });
-                localStorage.setItem('inventory', JSON.stringify(inventory));
-                renderInventory();
+        // EXPIRY LOGIC
+        function checkExpiry() {
+            const today = new Date();
+            const exp = new Date(EXPIRY_DATE);
+            if (today > exp) {
+                document.getElementById('lock-screen').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('hidden');
             }
         }
 
-        // Billing Logic
-        function addRow() {
-            const tbody = document.getElementById('bill-items');
-            const row = `<tr>
-                <td><input type="text" class="w-full p-1 border" placeholder="Item Name"></td>
-                <td><input type="number" class="w-full p-1 border qty" value="1" oninput="calcBill()"></td>
-                <td><input type="number" class="w-full p-1 border rate" value="0" oninput="calcBill()"></td>
-                <td><input type="number" class="w-full p-1 border gst" value="18" oninput="calcBill()"></td>
-                <td class="row-total p-2">0.00</td>
-            </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+        function checkUnlock() {
+            const key = document.getElementById('unlock-key').value;
+            if(key === UNLOCK_KEY) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            } else {
+                alert("Galat Key!");
+            }
         }
 
-        function calcBill() {
-            let subtotal = 0;
-            let grandtotal = 0;
-            document.querySelectorAll('#bill-items tr').forEach(row => {
-                const qty = row.querySelector('.qty').value;
-                const rate = row.querySelector('.rate').value;
-                const gstPercent = row.querySelector('.gst').value;
+        // TAB NAVIGATION
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            
+            if(['sale', 'purchase', 'quotation'].includes(tab)) {
+                document.getElementById('billing-area').classList.remove('hidden');
+                document.getElementById('bill-type-label').innerText = tab;
+                document.getElementById('tab-title').innerText = tab.toUpperCase();
+            } else {
+                document.getElementById(tab).classList.remove('hidden');
+                document.getElementById('tab-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
+            }
+        }
+
+        // PROFILE LOGIC
+        function saveProfile() {
+            const profile = {
+                name: document.getElementById('set-biz-name').value,
+                gst: document.getElementById('set-biz-gst').value,
+                addr: document.getElementById('set-biz-addr').value,
+                phone: document.getElementById('set-biz-phone').value
+            };
+            localStorage.setItem('biz_profile', JSON.stringify(profile));
+            alert("Profile Updated!");
+            loadProfile();
+        }
+
+        function loadProfile() {
+            const p = JSON.parse(localStorage.getItem('biz_profile')) || {name: "My Business", gst: "", addr: "", phone: ""};
+            document.getElementById('biz-name-display').innerText = p.name;
+            document.getElementById('print-biz-name').innerText = p.name;
+            document.getElementById('print-biz-details').innerText = `${p.addr} | GST: ${p.gst} | Mobile: ${p.phone}`;
+            
+            // Fill settings fields
+            document.getElementById('set-biz-name').value = p.name;
+            document.getElementById('set-biz-gst').value = p.gst;
+            document.getElementById('set-biz-addr').value = p.addr;
+            document.getElementById('set-biz-phone').value = p.phone;
+        }
+
+        // BILLING CALCULATIONS
+        function addRow() {
+            const html = `<tr class="border-b">
+                <td><input type="text" class="w-full p-2" placeholder="Item Name"></td>
+                <td><input type="number" class="w-full p-2 text-center item-qty" value="1" oninput="calculateBill()"></td>
+                <td><input type="number" class="w-full p-2 text-center item-rate" value="0" oninput="calculateBill()"></td>
+                <td><input type="number" class="w-full p-2 text-center item-gst" value="18" oninput="calculateBill()"></td>
+                <td class="p-2 text-right font-bold row-total">0.00</td>
+            </tr>`;
+            document.getElementById('bill-items-body').insertAdjacentHTML('beforeend', html);
+        }
+
+        function calculateBill() {
+            let sub = 0;
+            let grand = 0;
+            const rows = document.querySelectorAll('#bill-items-body tr');
+            
+            rows.forEach(row => {
+                const q = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const r = parseFloat(row.querySelector('.item-rate').value) || 0;
+                const g = parseFloat(row.querySelector('.item-gst').value) || 0;
                 
-                const base = qty * rate;
-                const gstAmount = (base * gstPercent) / 100;
-                const total = base + gstAmount;
+                const base = q * r;
+                const tax = base * (g / 100);
+                const total = base + tax;
                 
                 row.querySelector('.row-total').innerText = total.toFixed(2);
-                subtotal += base;
-                grandtotal += total;
+                sub += base;
+                grand += total;
             });
-            document.getElementById('bill-subtotal').innerText = subtotal.toFixed(2);
-            document.getElementById('bill-grandtotal').innerText = grandtotal.toFixed(2);
+            
+            document.getElementById('sub-total').innerText = sub.toFixed(2);
+            document.getElementById('grand-total').innerText = grand.toFixed(2);
         }
-
-        // Initial Load
-        updateDashboard();
-        document.getElementById('bill-date').valueAsDate = new Date();
     </script>
 </body>
 </html>
