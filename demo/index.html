@@ -1,262 +1,370 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="hi" class="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vyapar Pro - All In One</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bharat Vyapar Pro - Next Gen</title>
+    <!-- Tailwind & Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        @media print { .no-print { display: none; } .print-area { display: block !important; width: 100%; } }
-        .hidden { display: none; }
-        #lock-screen { z-index: 9999; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .app-gradient { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-active { color: #4f46e5; border-top: 3px solid #4f46e5; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-slate-50 text-slate-900 transition-colors duration-300">
 
-    <!-- EXPIRY LOCK SCREEN -->
-    <div id="lock-screen" class="fixed inset-0 bg-indigo-900 flex flex-col items-center justify-center text-white p-6 hidden">
-        <i class="fas fa-lock text-6xl mb-4 text-red-400"></i>
-        <h1 class="text-3xl font-bold mb-2 text-center">Software Expired!</h1>
-        <p class="text-indigo-200 mb-6 text-center">Kripya admin se sampark karein ya payment karein.</p>
-        <input type="password" id="unlock-key" placeholder="Enter Unlock Key" class="p-3 rounded text-black mb-4 w-64 text-center">
-        <button onclick="checkUnlock()" class="bg-red-500 hover:bg-red-600 px-8 py-2 rounded-lg font-bold">Unlock Now</button>
-    </div>
-
-    <!-- MAIN APP WRAPPER -->
-    <div id="main-app" class="flex flex-col md:flex-row min-h-screen">
+    <!-- APP WRAPPER -->
+    <div class="flex flex-col h-screen max-w-md mx-auto md:max-w-full md:flex-row overflow-hidden">
         
-        <!-- SIDEBAR (Desktop) -->
-        <div class="no-print w-64 bg-indigo-800 text-white flex-shrink-0 hidden md:block">
-            <div class="p-5 text-2xl font-bold border-b border-indigo-700 flex items-center">
-                <i class="fas fa-store mr-3"></i> Vyapar Pro
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 p-6 no-print">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 app-gradient rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">Bharat <span class="text-indigo-600">Vyapar</span></h1>
             </div>
-            <nav class="mt-4">
-                <a href="#" onclick="showTab('dashboard')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-chart-line mr-3"></i> Dashboard</a>
-                <a href="#" onclick="showTab('sale')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-file-invoice-dollar mr-3"></i> Sales (Bikri)</a>
-                <a href="#" onclick="showTab('purchase')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-shopping-cart mr-3"></i> Purchase</a>
-                <a href="#" onclick="showTab('quotation')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-file-alt mr-3"></i> Quotation</a>
-                <a href="#" onclick="showTab('inventory')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-boxes mr-3"></i> Inventory</a>
-                <a href="#" onclick="showTab('settings')" class="block py-3 px-6 hover:bg-indigo-700"><i class="fas fa-cog mr-3"></i> Profile Settings</a>
-            </nav>
-        </div>
-
-        <!-- MOBILE BOTTOM NAV -->
-        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-indigo-800 text-white flex justify-around p-3 no-print z-50">
-            <button onclick="showTab('dashboard')"><i class="fas fa-home"></i></button>
-            <button onclick="showTab('sale')"><i class="fas fa-plus-circle text-xl"></i></button>
-            <button onclick="showTab('inventory')"><i class="fas fa-box"></i></button>
-            <button onclick="showTab('settings')"><i class="fas fa-user-cog"></i></button>
-        </div>
-
-        <!-- CONTENT AREA -->
-        <div class="flex-1 pb-20 md:pb-0 overflow-y-auto">
             
-            <!-- HEADER -->
-            <header class="bg-white shadow p-4 flex justify-between items-center no-print">
-                <h2 id="tab-title" class="text-xl font-bold">Dashboard</h2>
-                <div id="biz-name-display" class="font-bold text-indigo-600">My Business</div>
+            <nav class="space-y-2 flex-1">
+                <button onclick="showTab('dashboard')" class="nav-link w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 transition text-slate-600 font-medium active">
+                    <i class="fas fa-grid-2"></i> Dashboard
+                </button>
+                <button onclick="showTab('billing')" class="nav-link w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 transition text-slate-600 font-medium">
+                    <i class="fas fa-file-invoice"></i> Create Bill
+                </button>
+                <button onclick="showTab('inventory')" class="nav-link w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 transition text-slate-600 font-medium">
+                    <i class="fas fa-boxes-stacked"></i> Inventory
+                </button>
+                <button onclick="showTab('settings')" class="nav-link w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 transition text-slate-600 font-medium">
+                    <i class="fas fa-user-gear"></i> Settings
+                </button>
+            </nav>
+
+            <div class="mt-auto p-4 bg-indigo-50 rounded-2xl">
+                <p class="text-xs text-indigo-600 font-bold uppercase mb-1">Status</p>
+                <div class="flex items-center gap-2 text-sm text-slate-700">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Offline Mode Active
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+            
+            <!-- TOP BAR (Mobile Friendly) -->
+            <header class="bg-white border-b p-4 flex justify-between items-center no-print">
+                <div class="md:hidden flex items-center gap-2">
+                    <div class="w-8 h-8 app-gradient rounded-lg flex items-center justify-center text-white text-xs">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <span class="font-bold">Vyapar Pro</span>
+                </div>
+                <div class="hidden md:block font-semibold text-slate-500" id="header-title">Welcome Back!</div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleDarkMode()" class="p-2 text-slate-500 hover:bg-slate-100 rounded-full">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="w-8 h-8 rounded-full bg-slate-200 border-2 border-indigo-200 overflow-hidden">
+                        <img src="https://api.dicebear.com/6.x/avataaars/svg?seed=Lucky" alt="User">
+                    </div>
+                </div>
             </header>
 
-            <main class="p-4 md:p-8">
+            <!-- TABS CONTAINER -->
+            <div id="tab-container" class="flex-1 overflow-y-auto p-4 md:p-8 custom-scroll pb-24 md:pb-8">
 
-                <!-- SETTINGS SECTION -->
-                <section id="settings" class="tab-content hidden">
-                    <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
-                        <h3 class="text-lg font-bold border-b pb-2 mb-4">Business Profile Settings</h3>
-                        <div class="grid grid-cols-1 gap-4">
-                            <input type="text" id="set-biz-name" placeholder="Business Name" class="border p-2 rounded">
-                            <input type="text" id="set-biz-gst" placeholder="Your GST Number" class="border p-2 rounded">
-                            <input type="text" id="set-biz-addr" placeholder="Business Address" class="border p-2 rounded">
-                            <input type="text" id="set-biz-phone" placeholder="Phone Number" class="border p-2 rounded">
-                            <button onclick="saveProfile()" class="bg-green-600 text-white py-2 rounded font-bold">Save Profile</button>
+                <!-- DASHBOARD TAB -->
+                <section id="dashboard" class="tab-content space-y-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <i class="fas fa-arrow-up-right text-green-500 mb-2"></i>
+                            <p class="text-xs text-slate-500 font-semibold uppercase">Today Sales</p>
+                            <h3 class="text-xl font-bold">₹<span id="stat-sales">0</span></h3>
                         </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <i class="fas fa-box text-blue-500 mb-2"></i>
+                            <p class="text-xs text-slate-500 font-semibold uppercase">Items</p>
+                            <h3 class="text-xl font-bold" id="stat-stock">0</h3>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <i class="fas fa-users text-purple-500 mb-2"></i>
+                            <p class="text-xs text-slate-500 font-semibold uppercase">Customers</p>
+                            <h3 class="text-xl font-bold">12</h3>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <i class="fas fa-clock text-orange-500 mb-2"></i>
+                            <p class="text-xs text-slate-500 font-semibold uppercase">Invoices</p>
+                            <h3 class="text-xl font-bold" id="stat-invoices">0</h3>
+                        </div>
+                    </div>
+
+                    <!-- Chart Card -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <h4 class="font-bold mb-4">Sales Analytics</h4>
+                        <canvas id="salesChart" height="150"></canvas>
                     </div>
                 </section>
 
-                <!-- BILLING SECTION (Common for Sale, Purchase, Quotation) -->
-                <section id="billing-area" class="tab-content hidden">
-                    <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg max-w-5xl mx-auto">
-                        <div class="flex justify-between items-start mb-6 border-b pb-4">
+                <!-- BILLING TAB -->
+                <section id="billing" class="tab-content hidden">
+                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-4xl mx-auto border border-indigo-100">
+                        <div class="app-gradient p-6 text-white flex justify-between items-center">
                             <div>
-                                <h1 id="bill-type-label" class="text-3xl font-bold text-gray-700 uppercase">INVOICE</h1>
-                                <p id="print-biz-name" class="font-bold text-xl mt-2"></p>
-                                <p id="print-biz-details" class="text-sm text-gray-600"></p>
+                                <h2 class="text-2xl font-bold">New Tax Invoice</h2>
+                                <p class="opacity-80 text-sm" id="bill-id-display">Invoice #1001</p>
                             </div>
-                            <div class="text-right">
-                                <input type="date" id="bill-date" class="border p-1 rounded mb-2">
-                                <p class="text-sm">No: #<span id="bill-no">1001</span></p>
+                            <i class="fas fa-file-invoice text-4xl opacity-30"></i>
+                        </div>
+                        
+                        <div class="p-4 md:p-8 space-y-6">
+                            <!-- Customer Info -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Customer Name</label>
+                                    <input type="text" id="bill-cust-name" placeholder="Search or Enter Name" class="w-full bg-slate-50 border-0 border-b-2 border-slate-200 p-3 focus:border-indigo-500 focus:ring-0 transition">
+                                </div>
+                                <div class="relative">
+                                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Mobile No.</label>
+                                    <input type="number" id="bill-cust-phone" placeholder="91XXXXXXXX" class="w-full bg-slate-50 border-0 border-b-2 border-slate-200 p-3 focus:border-indigo-500 focus:ring-0 transition">
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- CUSTOMER DETAILS -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded">
-                            <input type="text" id="cust-name" placeholder="Customer Name" class="border p-2 rounded w-full">
-                            <input type="text" id="cust-phone" placeholder="Mobile Number" class="border p-2 rounded w-full">
-                            <input type="text" id="cust-gst" placeholder="Customer GST (Optional)" class="border p-2 rounded w-full">
-                            <textarea id="cust-addr" placeholder="Full Address" class="border p-2 rounded w-full md:col-span-3 h-16"></textarea>
-                        </div>
+                            <!-- Items List -->
+                            <div class="space-y-4">
+                                <h3 class="font-bold text-slate-700 flex justify-between">
+                                    Product Details
+                                    <button onclick="addRow()" class="text-indigo-600 text-sm">+ Add Item</button>
+                                </h3>
+                                <div id="bill-rows" class="space-y-3">
+                                    <!-- Dynamic Row -->
+                                    <div class="bill-row bg-slate-50 p-4 rounded-2xl border border-slate-100 grid grid-cols-12 gap-3 relative">
+                                        <div class="col-span-12 md:col-span-6">
+                                            <input type="text" placeholder="Item Description" class="w-full bg-transparent border-b border-slate-300 p-1 font-semibold item-name">
+                                        </div>
+                                        <div class="col-span-4 md:col-span-2 text-center">
+                                            <label class="text-[10px] uppercase block">Qty</label>
+                                            <input type="number" value="1" oninput="calc()" class="w-full bg-transparent text-center font-bold item-qty">
+                                        </div>
+                                        <div class="col-span-4 md:col-span-2 text-center">
+                                            <label class="text-[10px] uppercase block">Rate</label>
+                                            <input type="number" value="0" oninput="calc()" class="w-full bg-transparent text-center font-bold item-rate">
+                                        </div>
+                                        <div class="col-span-4 md:col-span-2 text-center">
+                                            <label class="text-[10px] uppercase block">Total</label>
+                                            <div class="font-bold text-indigo-600 p-1 item-total">0.00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- ITEMS TABLE -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full mb-4 min-w-[600px]">
-                                <thead class="bg-indigo-100">
-                                    <tr>
-                                        <th class="p-2 text-left">Description</th>
-                                        <th class="p-2 w-20">Qty</th>
-                                        <th class="p-2 w-32">Rate</th>
-                                        <th class="p-2 w-24">GST %</th>
-                                        <th class="p-2 text-right">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bill-items-body">
-                                    <!-- Row 1 -->
-                                    <tr class="border-b">
-                                        <td><input type="text" class="w-full p-2" placeholder="Item Name"></td>
-                                        <td><input type="number" class="w-full p-2 text-center item-qty" value="1" oninput="calculateBill()"></td>
-                                        <td><input type="number" class="w-full p-2 text-center item-rate" value="0" oninput="calculateBill()"></td>
-                                        <td><input type="number" class="w-full p-2 text-center item-gst" value="18" oninput="calculateBill()"></td>
-                                        <td class="p-2 text-right font-bold row-total">0.00</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <button onclick="addRow()" class="no-print bg-indigo-600 text-white px-4 py-1 rounded-full text-sm">+ Add Row</button>
-
-                        <!-- TOTALS -->
-                        <div class="flex justify-end mt-6">
-                            <div class="w-full md:w-64 space-y-2">
-                                <div class="flex justify-between border-b pb-1"><span>Sub Total:</span> <span>₹<span id="sub-total">0.00</span></span></div>
-                                <div class="flex justify-between text-xl font-bold text-indigo-700"><span>Grand Total:</span> <span>₹<span id="grand-total">0.00</span></span></div>
-                                <button onclick="window.print()" class="no-print w-full bg-green-600 text-white py-3 rounded-lg font-bold mt-4">PRINT / SAVE</button>
+                            <!-- Footer -->
+                            <div class="pt-6 border-t border-slate-100">
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="text-slate-500 font-medium">Grand Total</span>
+                                    <span class="text-3xl font-black text-indigo-700">₹ <span id="bill-grand-total">0.00</span></span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="saveAndPrint()" class="flex-1 app-gradient text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-200">
+                                        <i class="fas fa-print mr-2"></i> SAVE & PRINT
+                                    </button>
+                                    <button onclick="shareWhatsApp()" class="w-14 bg-green-500 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-green-100">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- DASHBOARD (Default) -->
-                <section id="dashboard" class="tab-content">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="bg-white p-6 rounded shadow border-l-4 border-green-500">
-                            <p class="text-sm text-gray-500 uppercase font-bold">Today's Sales</p>
-                            <h2 class="text-2xl font-black mt-1">₹ 24,500</h2>
+                <!-- SETTINGS TAB -->
+                <section id="settings" class="tab-content hidden space-y-4">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border">
+                        <h3 class="font-bold mb-4">Business Profile</h3>
+                        <div class="space-y-4">
+                            <input type="text" id="set-biz-name" placeholder="Shop Name" class="w-full border p-3 rounded-xl bg-slate-50">
+                            <input type="text" id="set-biz-gst" placeholder="GSTIN" class="w-full border p-3 rounded-xl bg-slate-50">
+                            <button onclick="saveProfile()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold">Update Profile</button>
                         </div>
-                        <div class="bg-white p-6 rounded shadow border-l-4 border-blue-500">
-                            <p class="text-sm text-gray-500 uppercase font-bold">Total Stock</p>
-                            <h2 class="text-2xl font-black mt-1">1,240</h2>
-                        </div>
+                    </div>
+
+                    <div class="bg-red-50 p-6 rounded-3xl border border-red-100">
+                        <h3 class="font-bold text-red-700 mb-2">Expiry Protection (Grahak Control)</h3>
+                        <p class="text-sm text-red-600 mb-4">Software auto-lock ki date set karein.</p>
+                        <input type="date" id="expiry-date" class="w-full border p-3 rounded-xl mb-3">
+                        <input type="password" id="expiry-key" placeholder="Unlock Password" class="w-full border p-3 rounded-xl">
                     </div>
                 </section>
 
-            </main>
+            </div>
+
+            <!-- MOBILE BOTTOM NAV -->
+            <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-2 z-50 no-print">
+                <button onclick="showTab('dashboard')" class="mobile-nav-item flex flex-col items-center p-2 text-slate-400">
+                    <i class="fas fa-grid-2 text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1">Home</span>
+                </button>
+                <button onclick="showTab('billing')" class="mobile-nav-item flex flex-col items-center p-2 text-slate-400">
+                    <i class="fas fa-plus-circle text-3xl text-indigo-600 -mt-6 bg-white rounded-full p-1 border-4 border-slate-50"></i>
+                    <span class="text-[10px] font-bold mt-1">Bill</span>
+                </button>
+                <button onclick="showTab('settings')" class="mobile-nav-item flex flex-col items-center p-2 text-slate-400">
+                    <i class="fas fa-user-cog text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1">Profile</span>
+                </button>
+            </nav>
+
+        </main>
+    </div>
+
+    <!-- LOCK SCREEN -->
+    <div id="lock-screen" class="fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center p-8 text-white hidden">
+        <div class="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center mb-6 animate-bounce">
+            <i class="fas fa-lock text-4xl"></i>
         </div>
+        <h2 class="text-3xl font-bold mb-2 text-center">Payment Pending / Expired</h2>
+        <p class="text-slate-400 text-center mb-8">Service use karne ke liye password enter karein ya developer se baat karein.</p>
+        <input type="password" id="unlock-pass" placeholder="Unlock Key" class="w-full max-w-xs p-4 rounded-2xl bg-white/10 border border-white/20 text-center text-xl mb-4">
+        <button onclick="unlockApp()" class="w-full max-w-xs bg-red-500 py-4 rounded-2xl font-black text-lg">UNLOCK SYSTEM</button>
     </div>
 
     <script>
-        // CONFIGURATION: Set Expiry Date Here (Format: YYYY-MM-DD)
-        const EXPIRY_DATE = "2026-12-31"; // Is date ke baad lock ho jayega
-        const UNLOCK_KEY = "admin123";   // Lock kholne ka password
-
-        window.onload = function() {
-            checkExpiry();
-            loadProfile();
-            document.getElementById('bill-date').valueAsDate = new Date();
+        // -- CORE DATA --
+        let state = {
+            sales: JSON.parse(localStorage.getItem('vp_sales')) || [],
+            profile: JSON.parse(localStorage.getItem('vp_profile')) || { name: 'My Business', gst: '' },
+            settings: JSON.parse(localStorage.getItem('vp_settings')) || { expiry: '2030-12-31', key: '1234' }
         };
 
-        // EXPIRY LOGIC
-        function checkExpiry() {
-            const today = new Date();
-            const exp = new Date(EXPIRY_DATE);
-            if (today > exp) {
-                document.getElementById('lock-screen').classList.remove('hidden');
-                document.getElementById('main-app').classList.add('hidden');
-            }
-        }
-
-        function checkUnlock() {
-            const key = document.getElementById('unlock-key').value;
-            if(key === UNLOCK_KEY) {
-                document.getElementById('lock-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-            } else {
-                alert("Galat Key!");
-            }
-        }
-
-        // TAB NAVIGATION
-        function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        // -- NAVIGATION --
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('header-title').innerText = tabId.toUpperCase();
             
-            if(['sale', 'purchase', 'quotation'].includes(tab)) {
-                document.getElementById('billing-area').classList.remove('hidden');
-                document.getElementById('bill-type-label').innerText = tab;
-                document.getElementById('tab-title').innerText = tab.toUpperCase();
-            } else {
-                document.getElementById(tab).classList.remove('hidden');
-                document.getElementById('tab-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
-            }
+            // Mobile active state
+            document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('text-indigo-600'));
+            // Close sidebar on mobile
         }
 
-        // PROFILE LOGIC
-        function saveProfile() {
-            const profile = {
-                name: document.getElementById('set-biz-name').value,
-                gst: document.getElementById('set-biz-gst').value,
-                addr: document.getElementById('set-biz-addr').value,
-                phone: document.getElementById('set-biz-phone').value
-            };
-            localStorage.setItem('biz_profile', JSON.stringify(profile));
-            alert("Profile Updated!");
-            loadProfile();
-        }
-
-        function loadProfile() {
-            const p = JSON.parse(localStorage.getItem('biz_profile')) || {name: "My Business", gst: "", addr: "", phone: ""};
-            document.getElementById('biz-name-display').innerText = p.name;
-            document.getElementById('print-biz-name').innerText = p.name;
-            document.getElementById('print-biz-details').innerText = `${p.addr} | GST: ${p.gst} | Mobile: ${p.phone}`;
-            
-            // Fill settings fields
-            document.getElementById('set-biz-name').value = p.name;
-            document.getElementById('set-biz-gst').value = p.gst;
-            document.getElementById('set-biz-addr').value = p.addr;
-            document.getElementById('set-biz-phone').value = p.phone;
-        }
-
-        // BILLING CALCULATIONS
+        // -- BILLING LOGIC --
         function addRow() {
-            const html = `<tr class="border-b">
-                <td><input type="text" class="w-full p-2" placeholder="Item Name"></td>
-                <td><input type="number" class="w-full p-2 text-center item-qty" value="1" oninput="calculateBill()"></td>
-                <td><input type="number" class="w-full p-2 text-center item-rate" value="0" oninput="calculateBill()"></td>
-                <td><input type="number" class="w-full p-2 text-center item-gst" value="18" oninput="calculateBill()"></td>
-                <td class="p-2 text-right font-bold row-total">0.00</td>
-            </tr>`;
-            document.getElementById('bill-items-body').insertAdjacentHTML('beforeend', html);
+            const row = `<div class="bill-row bg-slate-50 p-4 rounded-2xl border border-slate-100 grid grid-cols-12 gap-3 relative animate-fade-in">
+                            <div class="col-span-12 md:col-span-6">
+                                <input type="text" placeholder="Item Name" class="w-full bg-transparent border-b border-slate-300 p-1 font-semibold item-name">
+                            </div>
+                            <div class="col-span-4 md:col-span-2 text-center">
+                                <input type="number" value="1" oninput="calc()" class="w-full bg-transparent text-center font-bold item-qty">
+                            </div>
+                            <div class="col-span-4 md:col-span-2 text-center">
+                                <input type="number" value="0" oninput="calc()" class="w-full bg-transparent text-center font-bold item-rate">
+                            </div>
+                            <div class="col-span-4 md:col-span-2 text-center">
+                                <div class="font-bold text-indigo-600 p-1 item-total">0.00</div>
+                            </div>
+                        </div>`;
+            document.getElementById('bill-rows').insertAdjacentHTML('beforeend', row);
         }
 
-        function calculateBill() {
-            let sub = 0;
+        function calc() {
             let grand = 0;
-            const rows = document.querySelectorAll('#bill-items-body tr');
-            
-            rows.forEach(row => {
-                const q = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const r = parseFloat(row.querySelector('.item-rate').value) || 0;
-                const g = parseFloat(row.querySelector('.item-gst').value) || 0;
-                
-                const base = q * r;
-                const tax = base * (g / 100);
-                const total = base + tax;
-                
-                row.querySelector('.row-total').innerText = total.toFixed(2);
-                sub += base;
+            document.querySelectorAll('.bill-row').forEach(row => {
+                const q = row.querySelector('.item-qty').value || 0;
+                const r = row.querySelector('.item-rate').value || 0;
+                const total = q * r;
+                row.querySelector('.item-total').innerText = total.toFixed(2);
                 grand += total;
             });
-            
-            document.getElementById('sub-total').innerText = sub.toFixed(2);
-            document.getElementById('grand-total').innerText = grand.toFixed(2);
+            document.getElementById('bill-grand-total').innerText = grand.toFixed(2);
         }
+
+        function saveAndPrint() {
+            const amount = parseFloat(document.getElementById('bill-grand-total').innerText);
+            if(amount <= 0) return alert("Items toh dalo!");
+
+            const invoice = {
+                id: Date.now(),
+                customer: document.getElementById('bill-cust-name').value,
+                amount: amount,
+                date: new Date().toLocaleDateString()
+            };
+
+            state.sales.push(invoice);
+            localStorage.setItem('vp_sales', JSON.stringify(state.sales));
+            
+            alert("Bill Saved Successfully!");
+            window.print();
+            location.reload(); // Refresh to reset UI
+        }
+
+        function shareWhatsApp() {
+            const name = document.getElementById('bill-cust-name').value;
+            const total = document.getElementById('bill-grand-total').innerText;
+            const text = `Hello ${name}, Aapka bill ₹${total} taiyaar hai. Thank you!`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+        }
+
+        // -- DASHBOARD & CHARTS --
+        function initChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Weekly Sales',
+                        data: [12, 19, 3, 5, 2, 3, 10],
+                        borderColor: '#4f46e5',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)'
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // -- SECURITY (EXPIRY) --
+        function checkLock() {
+            const today = new Date();
+            const exp = new Date(state.settings.expiry);
+            if (today > exp) {
+                document.getElementById('lock-screen').classList.remove('hidden');
+            }
+        }
+
+        function unlockApp() {
+            if(document.getElementById('unlock-pass').value === state.settings.key) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                // Extend expiry by 30 days for demo
+                state.settings.expiry = '2030-01-01'; 
+                localStorage.setItem('vp_settings', JSON.stringify(state.settings));
+            } else {
+                alert("Wrong Key!");
+            }
+        }
+
+        // -- THEME --
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // -- INIT --
+        window.onload = () => {
+            initChart();
+            checkLock();
+            document.getElementById('stat-sales').innerText = state.sales.reduce((a,b) => a + b.amount, 0).toLocaleString();
+            document.getElementById('stat-invoices').innerText = state.sales.length;
+            document.getElementById('set-biz-name').value = state.profile.name;
+            document.getElementById('set-biz-gst').value = state.profile.gst;
+        };
     </script>
 </body>
 </html>
