@@ -3,211 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Billing System</title>
+    <title>BillingHub | Professional Accounting Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #2563eb; --secondary: #64748b; --dark: #1e293b; --light: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: #e2e8f0; margin: 0; padding: 20px; color: var(--dark); }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        /* Toolbar */
-        .toolbar { display: flex; justify-content: space-between; margin-bottom: 30px; background: var(--light); padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; }
-        
-        /* Header Section */
-        .invoice-header { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .business-info input, .bill-to input { display: block; width: 100%; border: 1px solid transparent; padding: 5px; font-size: 14px; margin-bottom: 5px; }
-        .business-info input:hover, .bill-to input:hover { border-color: #ddd; background: #fff; }
-        .business-name { font-size: 24px !important; font-weight: bold; color: var(--primary); }
-        
-        /* Table Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: var(--primary); color: white; padding: 12px; text-align: left; }
-        td { border-bottom: 1px solid #e2e8f0; padding: 10px; }
-        input { border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        
-        /* Calculations Area */
-        .summary-wrapper { display: flex; justify-content: flex-end; margin-top: 30px; }
-        .summary-table { width: 300px; }
-        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-        .grand-total { font-size: 20px; font-weight: bold; color: var(--primary); border-top: 2px solid var(--primary); margin-top: 10px; }
-
-        /* Buttons */
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .btn-add { background: var(--primary); color: white; margin-top: 10px; }
-        .btn-print { background: #059669; color: white; font-size: 16px; }
-        .btn-danger { background: #ef4444; color: white; padding: 5px 10px; }
-        
-        .footer-note { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-
-        @media print {
-            .toolbar, .btn-add, .btn-danger, .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; }
-            input { border: none !important; background: transparent !important; }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar-link.active { background-color: #eff6ff; color: #2563eb; border-right: 4px solid #2563eb; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0; }
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
     </style>
 </head>
-<body>
+<body class="flex h-screen overflow-hidden">
 
-<div class="container">
-    <!-- Action Toolbar -->
-    <div class="toolbar no-print">
-        <h2 style="margin:0">Billing Software</h2>
-        <div>
-            <button class="btn btn-print" onclick="window.print()">Print / Save PDF</button>
-            <button class="btn" style="background:#64748b; color:white" onclick="saveSettings()">Save Shop Info</button>
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0 no-print flex flex-col">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+                <i class="fas fa-file-invoice-dollar"></i> BillingHub
+            </h1>
+            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">Enterprise Edition</p>
         </div>
-    </div>
+        
+        <nav class="flex-1 px-4 space-y-1">
+            <button onclick="showModule('dashboard')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition active" id="btn-dashboard">
+                <i class="fas fa-chart-line w-5"></i> Dashboard
+            </button>
+            <button onclick="showModule('billing')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-billing">
+                <i class="fas fa-plus-circle w-5"></i> Create Bill
+            </button>
+            <button onclick="showModule('inventory')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-inventory">
+                <i class="fas fa-box w-5"></i> Inventory
+            </button>
+            <button onclick="showModule('accounting')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-accounting">
+                <i class="fas fa-book w-5"></i> Accounting
+            </button>
+            <button onclick="showModule('reports')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-reports">
+                <i class="fas fa-file-alt w-5"></i> Reports
+            </button>
+        </nav>
 
-    <!-- Invoice Header -->
-    <div class="invoice-header">
-        <div class="business-info">
-            <input type="text" id="shopName" class="business-name" placeholder="Your Business Name">
-            <input type="text" id="shopAddress" placeholder="Address, City, State">
-            <input type="text" id="shopGST" placeholder="GSTIN: 27XXXXX0000X1Z1">
-            <input type="text" id="shopPhone" placeholder="Phone: +91 0000000000">
-        </div>
-        <div style="text-align: right;">
-            <h1 style="color:var(--secondary); margin:0">INVOICE</h1>
-            <p>Invoice No: <input type="text" value="#INV-001" style="width:100px; text-align:right"></p>
-            <p>Date: <input type="date" id="invDate" style="width:150px"></p>
-        </div>
-    </div>
-
-    <hr>
-
-    <!-- Customer Section -->
-    <div class="bill-to">
-        <strong>Bill To:</strong>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
-            <input type="text" placeholder="Customer Name">
-            <input type="text" placeholder="Customer Contact / GST">
-        </div>
-    </div>
-
-    <!-- Items Table -->
-    <table id="invoiceTable">
-        <thead>
-            <tr>
-                <th width="40%">Item Description</th>
-                <th width="10%">Qty</th>
-                <th width="15%">Price</th>
-                <th width="10%">Disc%</th>
-                <th width="10%">GST%</th>
-                <th width="15%">Amount</th>
-                <th class="no-print" width="5%"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><input type="text" placeholder="Product Name"></td>
-                <td><input type="number" class="qty" value="1" oninput="updateTotal()"></td>
-                <td><input type="number" class="price" value="0" oninput="updateTotal()"></td>
-                <td><input type="number" class="disc" value="0" oninput="updateTotal()"></td>
-                <td><input type="number" class="tax" value="18" oninput="updateTotal()"></td>
-                <td style="font-weight:bold">₹<span class="rowTotal">0.00</span></td>
-                <td class="no-print"></td>
-            </tr>
-        </tbody>
-    </table>
-    <button class="btn btn-add no-print" onclick="addRow()">+ Add Item</button>
-
-    <!-- Summary Section -->
-    <div class="summary-wrapper">
-        <div class="summary-table">
-            <div class="summary-row">
-                <span>Sub Total:</span>
-                <span>₹<span id="subTotal">0.00</span></span>
-            </div>
-            <div class="summary-row">
-                <span>Total Tax:</span>
-                <span>₹<span id="totalTax">0.00</span></span>
-            </div>
-            <div class="summary-row grand-total">
-                <span>Grand Total:</span>
-                <span>₹<span id="grandTotal">0.00</span></span>
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-lg">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">AD</div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-700">Admin User</p>
+                    <p class="text-xs text-slate-500">Business Owner</p>
+                </div>
             </div>
         </div>
-    </div>
+    </aside>
 
-    <!-- Footer -->
-    <div class="footer-note">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 50px;">
-            <div>
-                <strong>Notes / Terms:</strong>
-                <textarea style="width:100%; border:none; background:#f8fafc; margin-top:5px; height:60px; padding:10px" placeholder="Thanks for your business!"></textarea>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto relative">
+        
+        <!-- MODULE: DASHBOARD -->
+        <section id="mod-dashboard" class="p-8 space-y-8 animate-fade-in">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-800">Business Overview</h2>
+                    <p class="text-slate-500">Welcome back! Here's what's happening today.</p>
+                </div>
+                <div class="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-full font-medium">
+                    <i class="far fa-calendar-alt"></i> June 07, 2024
+                </div>
             </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <div style="border-bottom: 1px solid #333; height: 40px;"></div>
-                <p>Authorized Signatory</p>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="glass-card p-6 rounded-2xl">
+                    <p class="text-sm text-slate-500 font-medium">Daily Sales</p>
+                    <h3 class="text-2xl font-bold mt-1">₹45,280</h3>
+                    <span class="text-emerald-500 text-xs font-bold"><i class="fas fa-arrow-up"></i> 12.5%</span>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <p class="text-sm text-slate-500 font-medium">Total Customers</p>
+                    <h3 class="text-2xl font-bold mt-1">1,240</h3>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-amber-400">
+                    <p class="text-sm text-slate-500 font-medium">Stock Alerts</p>
+                    <h3 class="text-2xl font-bold mt-1 text-amber-600">08 Items</h3>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-blue-600">
+                    <p class="text-sm text-slate-500 font-medium">Net Profit (Monthly)</p>
+                    <h3 class="text-2xl font-bold mt-1">₹1,85,000</h3>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<script>
-    // Set Current Date
-    document.getElementById('invDate').valueAsDate = new Date();
+            <!-- Recent Transactions -->
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="p-6 border-bottom border-slate-100 flex justify-between items-center">
+                    <h4 class="font-bold text-slate-700">Recent Invoices</h4>
+                    <button class="text-blue-600 text-sm font-semibold">View All</button>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                        <tr>
+                            <th class="px-6 py-4">Invoice ID</th>
+                            <th class="px-6 py-4">Customer</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-slate-600">
+                        <tr class="border-t border-slate-50 hover:bg-slate-50/50">
+                            <td class="px-6 py-4 font-medium text-slate-900">#INV-8821</td>
+                            <td class="px-6 py-4">Rahul Sharma</td>
+                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">PAID</span></td>
+                            <td class="px-6 py-4 font-bold">₹1,250.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    // Load Saved Shop Data
-    window.onload = function() {
-        if(localStorage.getItem('shopName')) {
-            document.getElementById('shopName').value = localStorage.getItem('shopName');
-            document.getElementById('shopAddress').value = localStorage.getItem('shopAddress');
-            document.getElementById('shopGST').value = localStorage.getItem('shopGST');
-            document.getElementById('shopPhone').value = localStorage.getItem('shopPhone');
-        }
-    }
+        <!-- MODULE: BILLING -->
+        <section id="mod-billing" class="hidden p-8">
+            <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border border-slate-200">
+                <div class="bg-slate-800 p-8 text-white flex justify-between items-start">
+                    <div>
+                        <h2 class="text-3xl font-bold tracking-tight">TAX INVOICE</h2>
+                        <p class="opacity-70 mt-1">BillingHub Enterprise Suite</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm opacity-70">Invoice Number</p>
+                        <input type="text" value="BH-2024-001" class="bg-transparent text-xl font-bold text-right outline-none">
+                    </div>
+                </div>
 
-    function saveSettings() {
-        localStorage.setItem('shopName', document.getElementById('shopName').value);
-        localStorage.setItem('shopAddress', document.getElementById('shopAddress').value);
-        localStorage.setItem('shopGST', document.getElementById('shopGST').value);
-        localStorage.setItem('shopPhone', document.getElementById('shopPhone').value);
-        alert("Shop Details Saved Locally!");
-    }
+                <div class="p-8 grid grid-cols-2 gap-12">
+                    <div>
+                        <p class="text-xs font-bold text-blue-600 uppercase mb-2">From</p>
+                        <input type="text" value="BillingHub Solutions" class="text-lg font-bold block w-full outline-none">
+                        <textarea class="w-full text-sm text-slate-500 mt-1 resize-none outline-none" rows="3">GSTIN: 27AAAAA0000A1Z5&#10;Tower A, Business Park&#10;Mumbai, MH 400001</textarea>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-blue-600 uppercase mb-2">Bill To</p>
+                        <input type="text" placeholder="Client Name" class="text-lg font-bold block w-full outline-none border-b border-slate-100 focus:border-blue-400">
+                        <textarea class="w-full text-sm text-slate-500 mt-1 resize-none outline-none" rows="3" placeholder="Address & GST Number"></textarea>
+                    </div>
+                </div>
 
-    function addRow() {
-        const table = document.getElementById('invoiceTable').getElementsByTagName('tbody')[0];
-        const row = table.insertRow();
-        row.innerHTML = `
-            <td><input type="text" placeholder="Product Name"></td>
-            <td><input type="number" class="qty" value="1" oninput="updateTotal()"></td>
-            <td><input type="number" class="price" value="0" oninput="updateTotal()"></td>
-            <td><input type="number" class="disc" value="0" oninput="updateTotal()"></td>
-            <td><input type="number" class="tax" value="18" oninput="updateTotal()"></td>
-            <td style="font-weight:bold">₹<span class="rowTotal">0.00</span></td>
-            <td class="no-print"><button class="btn-danger" onclick="this.parentElement.parentElement.remove(); updateTotal()">X</button></td>
-        `;
-    }
-
-    function updateTotal() {
-        let subTotal = 0;
-        let totalTax = 0;
-        const rows = document.querySelectorAll('#invoiceTable tbody tr');
-
-        rows.forEach(row => {
-            const qty = parseFloat(row.querySelector('.qty').value) || 0;
-            const price = parseFloat(row.querySelector('.price').value) || 0;
-            const disc = parseFloat(row.querySelector('.disc').value) || 0;
-            const taxRate = parseFloat(row.querySelector('.tax').value) || 0;
-
-            // Calculation
-            const priceAfterDisc = price - (price * (disc / 100));
-            const baseAmount = priceAfterDisc * qty;
-            const taxAmount = baseAmount * (taxRate / 100);
-            const rowTotal = baseAmount + taxAmount;
-
-            row.querySelector('.rowTotal').innerText = rowTotal.toFixed(2);
+                <div class="px-8 pb-8">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-slate-100">
+                                <th class="py-3 text-left text-slate-400 font-semibold text-sm">Description</th>
+                                <th class="py-3 text-center text-slate-400 font-semibold text-sm" width="100">Qty</th>
+                                <th class="py-3 text-right text-slate-400 font-semibold text-sm" width="150">Price</th>
+                                <th class="py-3 text-right text-slate-400 font-semibold text-sm" width="150">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billItems">
+                            <tr class="border-b border-slate-50">
+                                <td class="py-4"><input type="text" placeholder="Item Name" class="w-full outline-none font-medium"></td>
+                                <td class="py-4"><input type="number" value="1" class="w-full text-center outline-none"></td>
+                                <td class="py-4"><input type="number" value="0" class="w-full text-right outline-none px-2 font-semibold"></td>
+                                <td class="py-4 text-right font-bold text-slate-800">₹0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="mt-4 text-blue-600 font-bold text-sm no-print" onclick="addItemRow()">+ ADD ITEM</button>
+                    
+                    <div class="mt-8 flex justify-end">
+                        <div class="w-64 space-y-3">
+                            <div class="flex justify-between text-slate-500"><span>Sub Total</span> <span class="font-bold text-slate-800">₹0.00</span></div>
+                            <div class="flex justify-between text-slate-500"><span>GST (18%)</span> <span class="font-bold text-slate-800">₹0.00</span></div>
+                            <div class="flex justify-between text-xl border-t border-slate-100 pt-3">
+                                <span class="font-bold text-slate-800">Grand Total</span>
+                                <span class="font-black text-blue-600">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            subTotal += baseAmount;
-            totalTax += taxAmount;
+            <div class="mt-8 flex justify-center gap-4 no-print">
+                <button class="px-8 py-3 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:scale-105 transition" onclick="window.print()">
+                    <i class="fas fa-print mr-2"></i> Print & WhatsApp
+                </button>
+                <button class="px-8 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold shadow-sm" onclick="showModule('dashboard')">
+                    Save as Draft
+                </button>
+            </div>
+        </section>
+
+        <!-- MODULE: INVENTORY -->
+        <section id="mod-inventory" class="hidden p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Stock Management</h2>
+                <button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold shadow-md">+ New Product</button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex gap-4">
+                    <input type="text" placeholder="Search product or scan barcode..." class="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 ring-blue-100">
+                    <select class="bg-white border border-slate-200 rounded-lg px-4 py-2 outline-none">
+                        <option>All Categories</option>
+                        <option>Electronics</option>
+                        <option>FMCG</option>
+                    </select>
+                </div>
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                        <tr>
+                            <th class="px-6 py-4">Product Name</th>
+                            <th class="px-6 py-4 text-center">In Stock</th>
+                            <th class="px-6 py-4">Price</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-t border-slate-100">
+                            <td class="px-6 py-4 font-semibold text-slate-800">Apple iPhone 15 Pro</td>
+                            <td class="px-6 py-4 text-center font-bold">42</td>
+                            <td class="px-6 py-4">₹1,14,000</td>
+                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold uppercase tracking-tight">Available</span></td>
+                            <td class="px-6 py-4"><button class="text-blue-600 hover:underline">Edit</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function showModule(modId) {
+            // Hide all
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            
+            // Show target
+            document.getElementById('mod-' + modId).classList.remove('hidden');
+            document.getElementById('btn-' + modId).classList.add('active');
+        }
+
+        function addItemRow() {
+            const row = `<tr class="border-b border-slate-50">
+                <td class="py-4"><input type="text" placeholder="Item Name" class="w-full outline-none font-medium text-slate-700"></td>
+                <td class="py-4"><input type="number" value="1" class="w-full text-center outline-none"></td>
+                <td class="py-4"><input type="number" value="0" class="w-full text-right outline-none px-2 font-semibold"></td>
+                <td class="py-4 text-right font-bold text-slate-800">₹0.00</td>
+            </tr>`;
+            document.getElementById('billItems').insertAdjacentHTML('beforeend', row);
+        }
+
+        // Module Switcher Animation Logic
+        window.addEventListener('DOMContentLoaded', () => {
+            showModule('dashboard');
         });
-
-        document.getElementById('subTotal').innerText = subTotal.toFixed(2);
-        document.getElementById('totalTax').innerText = totalTax.toFixed(2);
-        document.getElementById('grandTotal').innerText = (subTotal + totalTax).toFixed(2);
-    }
-</script>
-
+    </script>
 </body>
 </html>
