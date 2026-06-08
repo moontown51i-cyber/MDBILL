@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillingHub Enterprise | Data Persistence v6.0</title>
+    <title>BillingHub Pro | Edit-Ready Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root { --inv-font-size: 14px; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f4f7fa; margin: 0; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: #94a3b8; font-weight: 600; transition: 0.3s; border-radius: 12px; margin: 4px 15px; width: 85%; text-align: left; }
-        .nav-item.active { background: #4f46e5; color: white; box-shadow: 0 10px 15px rgba(79, 70, 229, 0.4); }
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; padding: 20px; }
         .app-grid { display: grid; grid-template-columns: 260px 1fr 1.2fr; height: 100vh; width: 100%; }
-        .form-col { background: #f8fafc; padding: 30px; overflow-y: auto; border-right: 1px solid #e2e8f0; }
-        .preview-col { background: #475569; padding: 30px; overflow-y: auto; display: flex; justify-content: center; }
-        #invoice-preview { background: white; width: 210mm; min-height: 297mm; padding: 15mm; box-shadow: 0 40px 60px rgba(0,0,0,0.5); transform-origin: top center; }
-        .card { background: white; border-radius: 24px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 24px; border: 1px solid #f1f5f9; }
-        .input-field { width: 100%; background: #f1f5f9; padding: 14px 18px; border-radius: 14px; border: 1px solid transparent; outline: none; transition: 0.2s; font-size: 14px; font-weight: 600; }
-        .input-field:focus { background: white; border-color: #4f46e5; }
+        .form-col { background: #f8fafc; padding: 25px; overflow-y: auto; border-right: 1px solid #e2e8f0; }
+        .preview-col { background: #475569; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+        
+        /* THE INVOICE - FULLY EDITABLE */
+        #invoice-preview { 
+            background: white; width: 210mm; min-height: 297mm; padding: 15mm; 
+            box-shadow: 0 40px 60px rgba(0,0,0,0.5); transform-origin: top center;
+            font-size: var(--inv-font-size);
+        }
+        [contenteditable="true"]:hover { background: #f0f7ff; outline: 1px dashed #4f46e5; cursor: text; }
+        
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .input-field { width: 100%; background: #f1f5f9; padding: 12px; border-radius: 12px; border: 1px solid transparent; outline: none; font-size: 13px; font-weight: 600; }
+        .item-row-edit { display: grid; grid-template-columns: 1fr 60px 100px 40px; gap: 8px; align-items: center; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -27,145 +34,114 @@
 <div class="app-grid">
     <!-- SIDEBAR -->
     <aside class="sidebar no-print">
-        <div class="p-8"><h1 class="text-2xl font-black italic text-indigo-400">BillingHub</h1><p class="text-[9px] uppercase font-black text-slate-500 tracking-[3px]">Safety Sync v6.0</p></div>
-        <nav class="flex-1">
-            <button onclick="location.reload()" class="nav-item active"><i class="fas fa-file-signature"></i> Billing Panel</button>
-            <button onclick="quickAddProduct()" class="nav-item"><i class="fas fa-boxes-stacked"></i> Items Inventory</button>
-            <button onclick="openSettings()" class="nav-item mt-auto"><i class="fas fa-store"></i> Shop Profile</button>
-        </nav>
+        <h1 class="text-xl font-black italic text-indigo-400 mb-10">BillingHub <span class="text-[10px] block text-white opacity-50 uppercase tracking-widest">v7.0 Pro Edit</span></h1>
+        
+        <div class="space-y-6">
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 block mb-3 tracking-widest">Document Controls</label>
+                <button onclick="location.reload()" class="w-full text-left p-3 rounded-xl bg-indigo-600 text-white font-bold text-sm mb-2"><i class="fas fa-plus mr-2"></i> New Bill</button>
+                <button onclick="downloadPDF()" class="w-full text-left p-3 rounded-xl bg-slate-800 text-white font-bold text-sm"><i class="fas fa-download mr-2"></i> Save PDF</button>
+            </div>
+
+            <!-- TEXT SIZE CONTROL -->
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-500 block mb-3 tracking-widest">Adjust Text Size (A4)</label>
+                <input type="range" min="10" max="24" value="14" class="w-full" oninput="changeFontSize(this.value)">
+                <div class="flex justify-between text-[10px] font-bold text-slate-400 mt-1"><span>Small</span><span>Large</span></div>
+            </div>
+
+            <div class="pt-10">
+                <button onclick="saveAndRecord()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black shadow-lg">FINALIZE & SAVE</button>
+            </div>
+        </div>
     </aside>
 
     <!-- FORM COLUMN -->
     <main class="form-col no-print">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-3xl font-black text-slate-800 tracking-tight">New Transaction</h2>
-            <div class="flex gap-2">
-                <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black shadow-lg shadow-indigo-200">Print / PDF</button>
-            </div>
-        </div>
+        <h2 class="text-2xl font-black text-slate-800 mb-6 tracking-tight">Drafting Bill</h2>
 
-        <!-- Universal Doc Selector -->
-        <div class="card bg-indigo-50/50">
-            <label class="text-[11px] font-black text-indigo-400 uppercase tracking-widest block mb-2">Document Template</label>
-            <select id="doc-type" class="w-full text-xl font-black text-indigo-900 bg-transparent outline-none" onchange="updatePreview()">
-                <option value="TAX INVOICE">Tax Invoice</option>
-                <option value="QUOTATION">Quotation / Estimate</option>
-                <option value="E-WAY BILL">E-Way Bill</option>
-                <option value="RETAIL INVOICE">Retail Invoice</option>
-                <option value="DELIVERY CHALLAN">Delivery Challan</option>
-                <option value="CREDIT NOTE">Credit Note</option>
-            </select>
-        </div>
-
-        <!-- Customer Card with Saved Parties -->
         <div class="card">
-            <label class="text-[10px] font-black text-slate-400 uppercase block mb-3">Party / Customer Details</label>
-            <div class="space-y-4">
-                <select id="party-select" class="input-field" onchange="loadPartyDetails()">
-                    <option value="new">+ Add New Party / Customer</option>
-                    <!-- Saved Parties will appear here -->
+            <label class="text-[10px] font-black text-slate-400 uppercase block mb-3">Template & Party</label>
+            <div class="space-y-3">
+                <select id="doc-type" class="input-field" onchange="updatePreview()">
+                    <option value="TAX INVOICE">Tax Invoice</option>
+                    <option value="QUOTATION">Quotation / Estimate</option>
+                    <option value="RETAIL BILL">Retail Bill</option>
+                    <option value="PROFORMA">Proforma Invoice</option>
                 </select>
-                <div id="new-party-fields" class="space-y-4">
-                    <input type="text" id="cust-name" placeholder="Party Name" class="input-field" oninput="updatePreview()">
-                    <textarea id="cust-info" placeholder="Full Address & GSTIN" class="input-field h-20" oninput="updatePreview()"></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <select id="tax-mode" class="input-field" onchange="updatePreview()">
-                        <option value="GST">GST Mode</option>
-                        <option value="NON-GST">Non-GST Bill</option>
-                    </select>
-                    <select id="gst-rate" class="input-field" onchange="updatePreview()">
-                        <option value="18">18% GST</option>
-                        <option value="12">12% GST</option>
-                        <option value="5">5% GST</option>
-                        <option value="28">28% GST</option>
-                    </select>
-                </div>
+                <input type="text" id="cust-name" placeholder="Customer Name" class="input-field" oninput="updatePreview()">
+                <textarea id="cust-info" placeholder="Full Address / Phone" class="input-field h-16" oninput="updatePreview()"></textarea>
             </div>
         </div>
 
-        <!-- Items Card -->
         <div class="card">
-            <label class="text-[10px] font-black text-slate-400 uppercase block mb-4">Item Details</label>
-            <div id="items-list" class="space-y-3"></div>
-            <button onclick="addItemRow()" class="w-full mt-4 py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-black hover:text-indigo-600 transition">+ Add Item Line</button>
+            <label class="text-[10px] font-black text-slate-400 uppercase block mb-3 tracking-widest">Manage Items (Live Edit)</label>
+            <div id="items-list-container" class="space-y-3">
+                <!-- Items with Edit capability will appear here -->
+            </div>
+            <button onclick="addItemRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600 transition">+ Add Row</button>
         </div>
-
-        <button onclick="saveAndReset()" class="w-full bg-[#1e293b] text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:scale-[1.01] transition uppercase tracking-widest">Generate & Save</button>
     </main>
 
-    <!-- PREVIEW COLUMN -->
+    <!-- PREVIEW COLUMN (FULLY EDITABLE) -->
     <section class="preview-col">
+        <p class="text-white/50 text-[10px] font-bold mb-4 uppercase tracking-[3px]"><i class="fas fa-mouse-pointer mr-1"></i> Tip: Click any text on invoice to edit directly</p>
+        
         <div id="invoice-preview">
             <!-- Header -->
-            <div class="flex justify-between items-start border-b-8 border-slate-900 pb-10 mb-10">
+            <div class="flex justify-between items-start border-b-8 border-slate-900 pb-8 mb-10">
                 <div>
-                    <h1 id="p-shop-name" class="text-4xl font-black text-slate-900 uppercase">BillingHub</h1>
-                    <p id="p-shop-info" class="text-sm text-slate-500 font-bold mt-4 leading-relaxed">Shop Address<br>GSTIN: 27XXXXX0000X1Z1</p>
+                    <h1 id="p-shop-name" contenteditable="true" class="text-4xl font-black text-slate-900 uppercase tracking-tighter">APNI DUKAN</h1>
+                    <p id="p-shop-info" contenteditable="true" class="text-sm text-slate-500 font-bold mt-3 leading-relaxed">Your Shop Address Details Here<br>GSTIN: 27XXXXX0000X1Z1</p>
                 </div>
                 <div class="text-right">
-                    <span id="p-doc-label" class="bg-slate-900 text-white px-5 py-2 text-xs font-black rounded uppercase tracking-[4px]">TAX INVOICE</span>
-                    <p id="p-inv-no" class="text-3xl font-black mt-6">#INV-1001</p>
-                    <p id="p-date" class="text-slate-400 font-bold text-sm">--/--/----</p>
+                    <span id="p-doc-label" contenteditable="true" class="bg-slate-900 text-white px-4 py-1 text-[10px] font-black rounded uppercase tracking-widest">TAX INVOICE</span>
+                    <p class="text-3xl font-black mt-6" id="p-inv-no">#INV-1001</p>
+                    <p contenteditable="true" class="text-slate-400 font-bold text-sm mt-1" id="p-date">Date: 07/06/2026</p>
                 </div>
             </div>
 
             <div class="mb-12">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Billed To</p>
-                <h3 id="p-cust-name" class="text-2xl font-black text-slate-900">Walk-in Customer</h3>
-                <p id="p-cust-info" class="text-sm text-slate-500 font-bold leading-relaxed">Not Provided</p>
+                <h3 id="p-cust-name" contenteditable="true" class="text-2xl font-black text-slate-900">Walk-in Customer</h3>
+                <p id="p-cust-info" contenteditable="true" class="text-sm text-slate-500 font-bold leading-relaxed">No address provided</p>
             </div>
 
             <table class="w-full mb-12">
                 <thead>
-                    <tr class="border-b-2 border-slate-900 text-[10px] font-black uppercase tracking-widest">
-                        <th class="py-5 text-left">Description of Goods</th>
-                        <th class="py-5 text-center" width="80">Qty</th>
-                        <th class="py-5 text-right" width="120">Rate</th>
-                        <th class="py-5 text-right" width="120">Total</th>
+                    <tr class="border-b-4 border-slate-900 text-[11px] font-black uppercase tracking-widest text-slate-400">
+                        <th class="py-4 text-left">Description</th>
+                        <th class="py-4 text-center" width="80">Qty</th>
+                        <th class="py-4 text-right" width="120">Rate</th>
+                        <th class="py-4 text-right" width="120">Amount</th>
                     </tr>
                 </thead>
-                <tbody id="p-items-body" class="text-sm font-bold text-slate-700 italic"></tbody>
+                <tbody id="p-items-body" class="font-bold text-slate-700 italic">
+                    <!-- Items go here -->
+                </tbody>
             </table>
 
             <div class="flex justify-end pt-10 border-t-2 border-slate-100">
-                <div class="w-80 space-y-4">
-                    <div class="flex justify-between text-slate-400 font-bold"><span>Subtotal</span> <span id="p-subtotal">₹0.00</span></div>
-                    <div id="p-gst-box" class="space-y-4">
-                        <div class="flex justify-between text-slate-400 font-bold"><span>CGST (<span class="gst-h">9</span>%)</span> <span id="p-cgst">₹0.00</span></div>
-                        <div class="flex justify-between text-slate-400 font-bold"><span>SGST (<span class="gst-h">9</span>%)</span> <span id="p-sgst">₹0.00</span></div>
-                    </div>
-                    <div class="flex justify-between items-center pt-5 border-t-8 border-slate-900">
-                        <span class="text-slate-900 font-black uppercase tracking-widest text-xs">Grand Total</span>
-                        <span id="p-grand" class="text-4xl font-black text-indigo-600">₹0</span>
+                <div class="w-72 space-y-4">
+                    <div class="flex justify-between font-black text-slate-900 text-2xl border-t-8 border-slate-900 pt-6">
+                        <span class="tracking-tighter">GRAND TOTAL</span>
+                        <span id="p-grand" class="text-indigo-600">₹0</span>
                     </div>
                 </div>
             </div>
-            <div class="mt-40 pt-10 border-t border-slate-100 text-[10px] text-slate-400 font-black uppercase tracking-widest text-center">Software Managed by BillingHub</div>
+
+            <div class="mt-40 pt-10 border-t border-slate-100 text-center">
+                <p contenteditable="true" class="text-[10px] text-slate-400 font-black uppercase tracking-[4px]">Terms: Goods once sold will not be taken back.</p>
+            </div>
         </div>
     </section>
 </div>
 
-<!-- SETTINGS MODAL -->
-<div id="settings-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md hidden z-[5000] flex items-center justify-center p-6">
-    <div class="bg-white rounded-[40px] p-10 w-full max-w-md shadow-2xl">
-        <h3 class="text-3xl font-black mb-6 text-slate-900 tracking-tighter">Shop Settings</h3>
-        <div class="space-y-4">
-            <input type="text" id="set-shop-name" placeholder="Shop Name" class="input-field">
-            <textarea id="set-shop-info" placeholder="Full Address & GSTIN" class="input-field h-32"></textarea>
-            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">Save Details</button>
-            <button onclick="closeSettings()" class="w-full text-slate-400 font-bold mt-2">Close</button>
-        </div>
-    </div>
-</div>
-
 <script>
-    // DATA CORE (bh5 keys preserved for no-loss update)
     let db = {
-        shop: JSON.parse(localStorage.getItem('bh5_shop')) || { name: "BillingHub Enterprise", info: "Shop Address\nGSTIN: 27XXXXX0000X1Z1" },
-        stock: JSON.parse(localStorage.getItem('bh5_stock')) || [],
-        parties: JSON.parse(localStorage.getItem('bh5_parties')) || [], // Naya directory
-        sales: JSON.parse(localStorage.getItem('bh5_sales')) || []
+        shop: JSON.parse(localStorage.getItem('bh7_shop')) || { name: "APNI DUKAN", info: "Address Line 1\nGSTIN: 27XXXXX0000X1Z1" },
+        stock: JSON.parse(localStorage.getItem('bh7_stock')) || [{ id: 1, name: "Sample Item", price: 100 }],
+        sales: JSON.parse(localStorage.getItem('bh7_sales')) || []
     };
 
     window.onload = () => {
@@ -178,125 +154,78 @@
     function loadInitialData() {
         document.getElementById('p-shop-name').innerText = db.shop.name;
         document.getElementById('p-shop-info').innerText = db.shop.info;
-        document.getElementById('set-shop-name').value = db.shop.name;
-        document.getElementById('set-shop-info').value = db.shop.info;
-        
-        // Load Parties into dropdown
-        const pSel = document.getElementById('party-select');
-        db.parties.forEach(p => {
-            let opt = document.createElement('option');
-            opt.value = p.name;
-            opt.innerText = p.name;
-            pSel.appendChild(opt);
-        });
     }
 
-    function loadPartyDetails() {
-        const val = document.getElementById('party-select').value;
-        if(val !== "new") {
-            const p = db.parties.find(x => x.name === val);
-            document.getElementById('cust-name').value = p.name;
-            document.getElementById('cust-info').value = p.info;
-            document.getElementById('new-party-fields').classList.add('hidden');
-        } else {
-            document.getElementById('cust-name').value = "";
-            document.getElementById('cust-info').value = "";
-            document.getElementById('new-party-fields').classList.remove('hidden');
-        }
-        updatePreview();
+    // UPDATE: TEXT SIZE CHANGE
+    function changeFontSize(size) {
+        document.documentElement.style.setProperty('--inv-font-size', size + 'px');
     }
 
-    function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
-    function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-
-    function saveSettings() {
-        db.shop.name = document.getElementById('set-shop-name').value;
-        db.shop.info = document.getElementById('set-shop-info').value;
-        localStorage.setItem('bh5_shop', JSON.stringify(db.shop));
-        loadInitialData();
-        closeSettings();
-        updatePreview();
-    }
-
+    // UPDATE: ITEM ADDING & EDITING
     function addItemRow() {
-        const options = db.stock.map(p => `<option value="${p.id}">${p.name} (₹${p.price})</option>`).join('');
-        const html = `<div class="flex gap-2 item-row">
-            <select class="sel-item input-field flex-1" onchange="updatePreview()"><option value="">Select Item</option>${options}</select>
-            <input type="number" class="sel-qty input-field w-20" value="1" oninput="updatePreview()">
-        </div>`;
-        document.getElementById('items-list').insertAdjacentHTML('beforeend', html);
+        const container = document.getElementById('items-list-container');
+        const rowId = Date.now();
+        const html = `
+            <div class="item-row-edit" id="row-${rowId}">
+                <input type="text" placeholder="Item Name" class="item-name input-field" oninput="updatePreview()">
+                <input type="number" placeholder="Qty" class="item-qty input-field" value="1" oninput="updatePreview()">
+                <input type="number" placeholder="Rate" class="item-rate input-field" value="0" oninput="updatePreview()">
+                <button onclick="removeRow(${rowId})" class="text-red-400 text-sm"><i class="fas fa-times-circle"></i></button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+        updatePreview();
+    }
+
+    function removeRow(id) {
+        document.getElementById('row-' + id).remove();
+        updatePreview();
     }
 
     function updatePreview() {
+        // Form to Preview Link
         document.getElementById('p-doc-label').innerText = document.getElementById('doc-type').value;
         document.getElementById('p-cust-name').innerText = document.getElementById('cust-name').value || "Walk-in Customer";
-        document.getElementById('p-cust-info').innerText = document.getElementById('cust-info').value || "Address Not Provided";
-        document.getElementById('p-date').innerText = new Date().toLocaleDateString();
-        document.getElementById('p-inv-no').innerText = "#INV-" + (db.sales.length + 1001);
-
+        document.getElementById('p-cust-info').innerText = document.getElementById('cust-info').value || "No address provided";
+        
         let subtotal = 0;
         let html = '';
-        document.querySelectorAll('.item-row').forEach(row => {
-            const pid = row.querySelector('.sel-item').value;
-            const qty = parseInt(row.querySelector('.sel-qty').value) || 0;
-            const item = db.stock.find(x => x.id == pid);
-            if(item) {
-                const rowTotal = item.price * qty;
-                subtotal += rowTotal;
-                html += `<tr class="border-b border-slate-50"><td class="py-5 font-black italic text-slate-800">${item.name}</td><td class="text-center font-bold text-slate-500">${qty}</td><td class="text-right text-slate-500">₹${item.price}</td><td class="text-right font-black text-slate-900">₹${rowTotal.toLocaleString()}</td></tr>`;
+        
+        document.querySelectorAll('.item-row-edit').forEach(row => {
+            const name = row.querySelector('.item-name').value;
+            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+            const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+            
+            if(name || rate > 0) {
+                const total = qty * rate;
+                subtotal += total;
+                html += `
+                    <tr class="border-b border-slate-50">
+                        <td class="py-5 text-slate-800" contenteditable="true">${name}</td>
+                        <td class="text-center" contenteditable="true">${qty}</td>
+                        <td class="text-right" contenteditable="true">₹${rate}</td>
+                        <td class="text-right font-black text-slate-900">₹${total.toLocaleString()}</td>
+                    </tr>
+                `;
             }
         });
 
-        document.getElementById('p-items-body').innerHTML = html || '<tr><td colspan="4" class="py-12 text-center text-slate-300 font-bold uppercase">No Items Added</td></tr>';
-        document.getElementById('p-subtotal').innerText = '₹' + subtotal.toFixed(2);
-
-        if(document.getElementById('tax-mode').value === 'GST') {
-            document.getElementById('p-gst-box').classList.remove('hidden');
-            const rate = parseFloat(document.getElementById('gst-rate').value);
-            const taxAmt = subtotal * (rate / 100);
-            document.querySelectorAll('.gst-h').forEach(el => el.innerText = (rate / 2));
-            document.getElementById('p-cgst').innerText = '₹' + (taxAmt / 2).toFixed(2);
-            document.getElementById('p-sgst').innerText = '₹' + (taxAmt / 2).toFixed(2);
-            document.getElementById('p-grand').innerText = '₹' + Math.round(subtotal + taxAmt).toLocaleString();
-        } else {
-            document.getElementById('p-gst-box').classList.add('hidden');
-            document.getElementById('p-grand').innerText = '₹' + Math.round(subtotal).toLocaleString();
-        }
-    }
-
-    function saveAndReset() {
-        const name = document.getElementById('cust-name').value;
-        const info = document.getElementById('cust-info').value;
-        const total = document.getElementById('p-grand').innerText.replace('₹','').replace(',','');
-        
-        if(parseFloat(total) <= 0) return alert("Select products first!");
-
-        // Save Party/Customer if new
-        if(name && !db.parties.find(x => x.name === name)) {
-            db.parties.push({ name, info });
-            localStorage.setItem('bh5_parties', JSON.stringify(db.parties));
-        }
-
-        db.sales.push({ id: Date.now(), amount: total });
-        localStorage.setItem('bh5_sales', JSON.stringify(db.sales));
-        
-        alert("Transaction Recorded Successfully!");
-        location.reload();
-    }
-
-    function quickAddProduct() {
-        const name = prompt("Item Name:");
-        const price = prompt("Item Sale Price:");
-        if(name && price) {
-            db.stock.push({ id: Date.now(), name, price: parseFloat(price), stock: 100 });
-            localStorage.setItem('bh5_stock', JSON.stringify(db.stock));
-            location.reload();
-        }
+        document.getElementById('p-items-body').innerHTML = html || '<tr><td colspan="4" class="py-20 text-center text-slate-200">NO ITEMS ADDED</td></tr>';
+        document.getElementById('p-grand').innerText = '₹' + subtotal.toLocaleString();
     }
 
     function downloadPDF() {
         const element = document.getElementById('invoice-preview');
-        html2pdf().set({ margin: 0, filename: 'Bill.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3 }, jsPDF: { format: 'a4', orientation: 'portrait' } }).from(element).save();
+        // Temporarily remove dashed outlines for clean print
+        const opt = { margin: 0, filename: 'Invoice_Pro.pdf', html2canvas: { scale: 3 }, jsPDF: { format: 'a4', orientation: 'portrait' } };
+        html2pdf().set(opt).from(element).save();
+    }
+
+    function saveAndRecord() {
+        alert("Finalized! Shop info and Party details updated in Template.");
+        db.shop.name = document.getElementById('p-shop-name').innerText;
+        db.shop.info = document.getElementById('p-shop-info').innerText;
+        localStorage.setItem('bh7_shop', JSON.stringify(db.shop));
     }
 
     function autoScaleInvoice() {
