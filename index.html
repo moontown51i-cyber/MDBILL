@@ -3,391 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillingHub Enterprise | Desktop Edition</title>
+    <title>BillingHub Enterprise | v3.0 Professional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fdfdfd; margin: 0; height: 100vh; overflow: hidden; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background: #0f172a; color: white; transition: 0.3s; }
+        .nav-btn { display: flex; align-items: center; gap: 12px; padding: 14px 20px; width: 100%; color: #94a3b8; font-weight: 600; border-radius: 12px; transition: 0.2s; }
+        .nav-btn:hover { background: #1e293b; color: white; }
+        .nav-btn.active { background: #4f46e5; color: white; }
         
-        /* Layout Definitions */
-        .app-container { display: flex; height: 100vh; width: 100%; }
-        
-        /* Desktop Sidebar */
-        .sidebar-desktop { width: 260px; background: #1e293b; color: white; display: none; flex-direction: column; padding: 24px; transition: 0.3s; }
-        
-        /* Content Areas */
-        .main-form-area { flex: 0 0 45%; background: #f8fafc; overflow-y: auto; padding: 32px; border-right: 1px solid #e2e8f0; }
-        .preview-area { flex: 1; background: #64748b; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
+        /* Layout */
+        .app-container { display: flex; height: 100vh; }
+        .content-area { flex: 1; display: flex; overflow: hidden; }
+        .form-panel { flex: 0 0 40%; background: #f8fafc; overflow-y: auto; padding: 30px; border-right: 1px solid #e2e8f0; }
+        .preview-panel { flex: 1; background: #475569; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
 
-        /* Mobile Bottom Nav */
-        .mobile-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #e2e8f0; z-index: 100; }
-        
-        /* Responsive Logic */
-        @media (min-width: 1024px) {
-            .sidebar-desktop { display: flex; }
-            .mobile-nav { display: none; }
-        }
-
-        @media (max-width: 1023px) {
-            .app-container { flex-direction: column; overflow-y: auto; }
-            .main-form-area { flex: none; width: 100%; padding: 20px; }
-            .preview-area { flex: none; width: 100%; padding: 20px; background: #f1f5f9; }
-        }
-
-        /* Invoice Scaling Logic */
+        /* Invoice Preview */
         #invoice-wrapper {
-            background: white;
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform-origin: top center;
-            zoom: 0.8; /* Default zoom for desktop */
+            background: white; width: 210mm; min-height: 297mm; padding: 20mm;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3); transform-origin: top center;
         }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        .form-card { background: white; border-radius: 24px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 20px; }
-        .input-group { background: #f1f5f9; border-radius: 16px; padding: 12px 16px; border: 1px solid transparent; transition: 0.3s; }
-        .input-group:focus-within { background: white; border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        .card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .input-box { width: 100%; background: #f1f5f9; padding: 12px 16px; border-radius: 12px; border: 1px solid transparent; outline: none; transition: 0.2s; font-weight: 500; }
+        .input-box:focus { background: white; border-color: #4f46e5; ring: 2px solid #eef2ff; }
+
+        @media (max-width: 1024px) {
+            .app-container { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100%; padding: 10px; flex-direction: row; }
+            .content-area { flex-direction: column; }
+            .form-panel, .preview-panel { flex: none; width: 100%; }
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    
-    <!-- 1. DESKTOP SIDEBAR -->
-    <aside class="sidebar-desktop no-print">
-        <div class="mb-10">
-            <h1 class="text-2xl font-black tracking-tighter flex items-center gap-2 text-indigo-400">
-                <i class="fas fa-bolt"></i> BillingHub
-            </h1>
-            <p class="text-[10px] uppercase tracking-[3px] font-bold text-slate-500 mt-1">Enterprise Suite</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar no-print flex flex-col p-6">
+        <div class="mb-10 px-2">
+            <h1 class="text-2xl font-black tracking-tighter text-indigo-400 italic">BillingHub</h1>
+            <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Enterprise Edition</p>
         </div>
-        
+
         <nav class="space-y-2 flex-1">
-            <button onclick="switchTab('billing')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white font-bold transition">
-                <i class="fas fa-plus-circle"></i> Create Invoice
-            </button>
-            <button onclick="switchTab('inventory')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 transition">
-                <i class="fas fa-box"></i> Inventory
-            </button>
-            <button onclick="switchTab('reports')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 transition">
-                <i class="fas fa-chart-pie"></i> Sales Reports
-            </button>
+            <button onclick="switchTab('billing')" class="nav-btn active" id="tab-billing-btn"><i class="fas fa-file-invoice"></i> Billing</button>
+            <button onclick="switchTab('inventory')" class="nav-btn" id="tab-inventory-btn"><i class="fas fa-boxes"></i> Inventory</button>
+            <button onclick="switchTab('reports')" class="nav-btn" id="tab-reports-btn"><i class="fas fa-chart-line"></i> Reports</button>
+            <button onclick="switchTab('settings')" class="nav-btn" id="tab-settings-btn"><i class="fas fa-cog"></i> Shop Settings</button>
         </nav>
 
-        <div class="bg-slate-800 p-4 rounded-2xl">
-            <p class="text-xs font-bold text-slate-500 mb-2 uppercase">Stock Alerts</p>
-            <div id="low-stock-box" class="text-sm text-red-400 font-medium italic">0 items low in stock</div>
+        <div class="bg-slate-800 p-4 rounded-2xl text-xs">
+            <p class="text-slate-500 font-bold mb-1 uppercase tracking-tighter">System Status</p>
+            <p class="text-emerald-400 font-bold"><i class="fas fa-circle text-[8px] mr-1"></i> Data Live (Auto-Save)</p>
         </div>
     </aside>
 
-    <!-- 2. BILLING FORM AREA (45%) -->
-    <main class="main-form-area no-print" id="form-container">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-3xl font-black text-slate-800">New Document</h2>
-            <div class="flex gap-2">
-                <button onclick="downloadPDF()" class="bg-white text-slate-700 border border-slate-200 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition">
-                    <i class="fas fa-download mr-2"></i> PDF
-                </button>
-                <button onclick="window.print()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-print mr-2"></i> Print
-                </button>
-            </div>
-        </div>
-
-        <!-- Document Type Selector -->
-        <div class="form-card">
-            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Document Template</label>
-            <select id="doc-type" class="w-full text-lg font-bold outline-none bg-transparent" onchange="updatePreview()">
-                <option value="TAX INVOICE">GST Tax Invoice (A4)</option>
-                <option value="RETAIL INVOICE">Retail Bill (A4)</option>
-                <option value="QUOTATION">Quotation / Estimate</option>
-                <option value="PURCHASE INVOICE">Purchase Record (Stock In)</option>
-                <option value="DELIVERY CHALLAN">Delivery Challan</option>
-            </select>
-        </div>
-
-        <!-- Customer & Details -->
-        <div class="form-card">
-            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Customer Information</label>
-            <div class="space-y-3">
-                <div class="input-group">
-                    <input type="text" id="cust-name" placeholder="Customer Name" class="w-full bg-transparent outline-none font-bold text-slate-700" oninput="updatePreview()">
+    <!-- CONTENT AREA -->
+    <main class="content-area">
+        <!-- FORM PANEL -->
+        <div class="form-panel" id="form-panel">
+            
+            <!-- SECTION: BILLING -->
+            <div id="section-billing">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-black text-slate-800">New Bill</h2>
+                    <select id="doc-type" class="bg-indigo-600 text-white px-3 py-2 rounded-xl font-bold text-sm outline-none" onchange="updatePreview()">
+                        <option value="TAX INVOICE">GST Tax Invoice</option>
+                        <option value="QUOTATION">Quotation / Estimate</option>
+                        <option value="RETAIL BILL">Retail Bill</option>
+                    </select>
                 </div>
-                <div class="input-group">
-                    <input type="text" id="cust-details" placeholder="Address / Contact / GSTIN" class="w-full bg-transparent outline-none text-sm text-slate-500" oninput="updatePreview()">
+
+                <div class="card">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Customer Details</p>
+                    <div class="space-y-3">
+                        <input type="text" id="cust-name" placeholder="Customer Name" class="input-box" oninput="updatePreview()">
+                        <input type="text" id="cust-contact" placeholder="Address & Phone" class="input-box" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Items & Products</p>
+                    <div id="bill-items-list" class="space-y-2"></div>
+                    <button onclick="addBillRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600 hover:border-indigo-300 transition">+ Add Item</button>
+                </div>
+
+                <button onclick="generateTransaction()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-black transition">GENERATE & PRINT</button>
+            </div>
+
+            <!-- SECTION: INVENTORY -->
+            <div id="section-inventory" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-black text-slate-800">Product Stock</h2>
+                    <button onclick="toggleProductModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm">+ Add New</button>
+                </div>
+                <div class="card overflow-hidden !p-0">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
+                            <tr>
+                                <th class="p-4">Product</th>
+                                <th class="p-4">Price</th>
+                                <th class="p-4">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="text-sm font-semibold text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION: REPORTS -->
+            <div id="section-reports" class="hidden">
+                <h2 class="text-2xl font-black text-slate-800 mb-6">Sales History</h2>
+                <div id="reports-list" class="space-y-3"></div>
+            </div>
+
+            <!-- SECTION: SETTINGS -->
+            <div id="section-settings" class="hidden">
+                <h2 class="text-2xl font-black text-slate-800 mb-6">Shop Profile</h2>
+                <div class="card space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase">Business Name</label>
+                        <input type="text" id="set-shop-name" class="input-box" oninput="saveShopSettings()">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase">Address / Contact</label>
+                        <input type="text" id="set-shop-address" class="input-box" oninput="saveShopSettings()">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase">GST Number</label>
+                        <input type="text" id="set-shop-gst" class="input-box" oninput="saveShopSettings()">
+                    </div>
+                    <p class="text-xs text-indigo-500 font-bold italic">* Changes are saved and applied to invoice instantly.</p>
+                </div>
+            </aside>
+        </div>
+
+        <!-- PREVIEW PANEL -->
+        <div class="preview-panel no-print">
+            <div id="invoice-wrapper">
+                <div class="flex justify-between items-start border-b-4 border-slate-900 pb-10 mb-10">
+                    <div>
+                        <h1 id="prev-shop-name" class="text-4xl font-black text-slate-900 uppercase">APNI DUKAN</h1>
+                        <p id="prev-shop-info" class="text-sm text-slate-500 mt-2 font-bold leading-relaxed">Mumbai, Maharashtra<br>GSTIN: 27XXXXX0000X1Z1</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="prev-doc-label" class="bg-slate-900 text-white px-3 py-1 text-[10px] font-black rounded uppercase tracking-widest">TAX INVOICE</span>
+                        <p id="prev-inv-no" class="text-2xl font-black mt-4">#INV-0001</p>
+                        <p id="prev-date" class="text-slate-400 font-bold text-sm">--/--/----</p>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Customer Details</p>
+                    <h3 id="prev-cust-name" class="text-xl font-black text-slate-900">Walk-in Customer</h3>
+                    <p id="prev-cust-info" class="text-sm text-slate-500 font-bold">Not Provided</p>
+                </div>
+
+                <table class="w-full mb-10">
+                    <thead>
+                        <tr class="border-b-2 border-slate-900 text-[10px] font-black uppercase">
+                            <th class="py-3 text-left">Description</th>
+                            <th class="py-3 text-center" width="80">Qty</th>
+                            <th class="py-3 text-right" width="120">Price</th>
+                            <th class="py-3 text-right" width="120">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prev-items-list" class="text-sm font-bold text-slate-700 italic"></tbody>
+                </table>
+
+                <div class="flex justify-end pt-10 border-t-2 border-slate-100">
+                    <div class="w-64 space-y-3">
+                        <div class="flex justify-between font-bold text-slate-400 text-sm"><span>Subtotal</span> <span id="prev-sub">₹0.00</span></div>
+                        <div class="flex justify-between font-black text-slate-900 text-2xl border-t-4 border-slate-900 pt-4"><span>TOTAL</span> <span id="prev-grand">₹0.00</span></div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Product Selector -->
-        <div class="form-card">
-            <div class="flex justify-between items-center mb-4">
-                <label class="text-xs font-black text-slate-400 uppercase tracking-widest block">Products & Items</label>
-                <button onclick="openProductModal()" class="text-indigo-600 text-xs font-bold underline">+ Create New Product</button>
-            </div>
-            <div id="item-inputs" class="space-y-3">
-                <!-- Rows injected by JS -->
-            </div>
-            <button onclick="addItemInputRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold hover:border-indigo-300 hover:text-indigo-500 transition">
-                + Add Row
-            </button>
-        </div>
-
-        <button onclick="processAndSave()" class="w-full bg-slate-900 text-white py-5 rounded-[24px] font-black text-xl shadow-2xl hover:bg-black transition transform active:scale-95">
-            GENERATE & SAVE TRANSACTION
-        </button>
     </main>
-
-    <!-- 3. INVOICE PREVIEW AREA (55%) -->
-    <section class="preview-area" id="preview-container">
-        <div id="invoice-wrapper">
-            <!-- HEADER -->
-            <div class="flex justify-between items-start border-b-8 border-slate-900 pb-10 mb-10">
-                <div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter" id="p-shop-name">BillingHub</h1>
-                    <p class="text-slate-500 font-bold mt-4 text-sm leading-relaxed" id="p-shop-info">
-                        Tower A, Business District, Mumbai<br>
-                        GSTIN: 27AAAAA0000A1Z5 | Ph: +91 9988776655
-                    </p>
-                </div>
-                <div class="text-right">
-                    <span class="bg-slate-900 text-white px-4 py-1 text-[10px] font-black uppercase tracking-[4px] rounded" id="p-label">TAX INVOICE</span>
-                    <p class="text-slate-900 font-black text-2xl mt-4" id="p-inv-no">#INV-0001</p>
-                    <p class="text-slate-400 font-bold text-sm" id="p-date">07/06/2024</p>
-                </div>
-            </div>
-
-            <!-- CLIENT INFO -->
-            <div class="grid grid-cols-2 gap-10 mb-12">
-                <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Billed To</p>
-                    <h3 class="text-xl font-black text-slate-900" id="p-cust-name">Walk-in Customer</h3>
-                    <p class="text-slate-500 text-sm font-medium mt-1 leading-relaxed" id="p-cust-details">Not Provided</p>
-                </div>
-            </div>
-
-            <!-- TABLE -->
-            <table class="w-full mb-12">
-                <thead>
-                    <tr class="border-b-2 border-slate-900">
-                        <th class="py-4 text-left text-[10px] font-black uppercase tracking-widest">Description</th>
-                        <th class="py-4 text-center text-[10px] font-black uppercase tracking-widest" width="80">Qty</th>
-                        <th class="py-4 text-right text-[10px] font-black uppercase tracking-widest" width="120">Rate</th>
-                        <th class="py-4 text-right text-[10px] font-black uppercase tracking-widest" width="150">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="p-items">
-                    <!-- Items injected by JS -->
-                </tbody>
-            </table>
-
-            <!-- TOTALS -->
-            <div class="flex justify-end pt-10 border-t-2 border-slate-100">
-                <div class="w-80 space-y-4">
-                    <div class="flex justify-between text-slate-400 font-bold">
-                        <span>Subtotal</span>
-                        <span id="p-subtotal">₹0.00</span>
-                    </div>
-                    <div class="flex justify-between text-slate-400 font-bold">
-                        <span>Tax (GST)</span>
-                        <span id="p-tax">₹0.00</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-4 border-t-4 border-slate-900">
-                        <span class="text-slate-900 font-black">GRAND TOTAL</span>
-                        <span class="text-3xl font-black text-indigo-600" id="p-grand-total">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FOOTER -->
-            <div class="mt-32 pt-10 border-t border-slate-100 flex justify-between items-end">
-                <div class="text-[10px] text-slate-400 max-w-sm leading-loose">
-                    <p class="font-black text-slate-900 mb-1 uppercase tracking-widest">Terms & Conditions</p>
-                    1. Goods once sold will not be taken back.<br>
-                    2. Interest @18% p.a. will be charged for delayed payments.<br>
-                    3. This is a computer generated invoice.
-                </div>
-                <div class="text-center">
-                    <div class="w-40 border-b border-slate-900 mb-2"></div>
-                    <p class="text-[10px] font-black uppercase tracking-widest">Authorized Signatory</p>
-                </div>
-            </div>
-        </div>
-    </section>
 </div>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-nav no-print">
-    <button class="flex-1 py-4 text-indigo-600 font-black text-xs uppercase" onclick="showMobile('billing')"><i class="fas fa-plus block mb-1"></i> Bill</button>
-    <button class="flex-1 py-4 text-slate-400 font-black text-xs uppercase" onclick="showMobile('inventory')"><i class="fas fa-box block mb-1"></i> Stock</button>
-    <button class="flex-1 py-4 text-slate-400 font-black text-xs uppercase" onclick="showMobile('reports')"><i class="fas fa-chart-line block mb-1"></i> Reports</button>
-</nav>
-
-<!-- MODAL: ADD PRODUCT -->
-<div id="p-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden z-[2000] flex items-center justify-center p-6">
-    <div class="bg-white rounded-[40px] p-10 w-full max-w-md shadow-2xl">
-        <h3 class="text-3xl font-black mb-8 text-slate-900 tracking-tighter">Add to Inventory</h3>
+<!-- ADD PRODUCT MODAL -->
+<div id="modal-product" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-6">
+    <div class="bg-white rounded-[32px] p-8 w-full max-w-sm shadow-2xl">
+        <h3 class="text-2xl font-black mb-6">New Product</h3>
         <div class="space-y-4">
-            <input type="text" id="new-p-name" placeholder="Product Name" class="w-full p-5 bg-slate-50 rounded-2xl outline-none font-bold border border-transparent focus:border-indigo-500">
-            <input type="number" id="new-p-price" placeholder="Sale Price" class="w-full p-5 bg-slate-50 rounded-2xl outline-none font-bold border border-transparent focus:border-indigo-500">
-            <input type="number" id="new-p-stock" placeholder="Initial Stock Qty" class="w-full p-5 bg-slate-50 rounded-2xl outline-none font-bold border border-transparent focus:border-indigo-500">
-            <button onclick="saveNewProduct()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-indigo-200">Save Product</button>
-            <button onclick="closeProductModal()" class="w-full text-slate-400 font-bold py-2">Discard</button>
+            <input type="text" id="new-p-name" placeholder="Item Name" class="input-box">
+            <input type="number" id="new-p-price" placeholder="Sales Price" class="input-box">
+            <input type="number" id="new-p-stock" placeholder="Initial Stock" class="input-box">
+            <button onclick="saveNewProduct()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black">Save to Library</button>
+            <button onclick="toggleProductModal()" class="w-full text-slate-400 font-bold text-sm mt-2">Close</button>
         </div>
     </div>
 </div>
 
 <script>
-    // CORE STATE
-    let state = {
-        products: JSON.parse(localStorage.getItem('bh_stock')) || [],
-        sales: JSON.parse(localStorage.getItem('bh_data')) || [],
-        nextInv: (JSON.parse(localStorage.getItem('bh_data')) || []).length + 1
+    // DATA CORE
+    let db = {
+        shop: JSON.parse(localStorage.getItem('bh3_shop')) || { name: "MY BUSINESS", address: "Business Address Here", gst: "27XXXXX0000X1Z1" },
+        products: JSON.parse(localStorage.getItem('bh3_stock')) || [],
+        sales: JSON.parse(localStorage.getItem('bh3_sales')) || []
     };
 
-    // INIT
     window.onload = () => {
-        addItemInputRow();
+        // Load settings to form
+        document.getElementById('set-shop-name').value = db.shop.name;
+        document.getElementById('set-shop-address').value = db.shop.address;
+        document.getElementById('set-shop-gst').value = db.shop.gst;
+        
+        addBillRow();
         updatePreview();
+        renderInventory();
+        renderReports();
         autoScaleInvoice();
     };
 
-    window.onresize = autoScaleInvoice;
+    // TAB SWITCHER FIX
+    function switchTab(tab) {
+        // Hide all sections
+        document.getElementById('section-billing').classList.add('hidden');
+        document.getElementById('section-inventory').classList.add('hidden');
+        document.getElementById('section-reports').classList.add('hidden');
+        document.getElementById('section-settings').classList.add('hidden');
+        
+        // Remove active class from buttons
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-    function autoScaleInvoice() {
-        const container = document.getElementById('preview-container');
-        const invoice = document.getElementById('invoice-wrapper');
-        const containerWidth = container.offsetWidth - 80;
-        const invoiceWidth = 794; // 210mm in pixels at 96dpi
+        // Show active
+        document.getElementById('section-' + tab).classList.remove('hidden');
+        document.getElementById('tab-' + tab + '-btn').classList.add('active');
 
-        if (containerWidth < invoiceWidth) {
-            const scale = containerWidth / invoiceWidth;
-            invoice.style.zoom = scale;
+        // Layout handling for non-billing tabs
+        if(tab !== 'billing') {
+            document.getElementById('form-panel').style.flex = "0 0 100%";
         } else {
-            invoice.style.zoom = 1;
+            document.getElementById('form-panel').style.flex = "0 0 40%";
         }
     }
 
-    function openProductModal() { document.getElementById('p-modal').classList.remove('hidden'); }
-    function closeProductModal() { document.getElementById('p-modal').classList.add('hidden'); }
+    // SHOP SETTINGS LOGIC
+    function saveShopSettings() {
+        db.shop.name = document.getElementById('set-shop-name').value;
+        db.shop.address = document.getElementById('set-shop-address').value;
+        db.shop.gst = document.getElementById('set-shop-gst').value;
+        localStorage.setItem('bh3_shop', JSON.stringify(db.shop));
+        updatePreview();
+    }
+
+    // INVENTORY LOGIC
+    function toggleProductModal() { document.getElementById('modal-product').classList.toggle('hidden'); }
 
     function saveNewProduct() {
         const name = document.getElementById('new-p-name').value;
         const price = document.getElementById('new-p-price').value;
         const stock = document.getElementById('new-p-stock').value;
-        if(!name || !price) return alert("Fill details!");
+        if(!name || !price) return alert("Fill details");
 
-        state.products.push({ id: Date.now(), name, price: parseFloat(price), stock: parseInt(stock) });
-        localStorage.setItem('bh_stock', JSON.stringify(state.products));
-        closeProductModal();
-        alert("Product added to Library!");
-        refreshInputs();
+        db.products.push({ id: Date.now(), name, price: parseFloat(price), stock: parseInt(stock) });
+        localStorage.setItem('bh3_stock', JSON.stringify(db.products));
+        alert("Saved!");
+        toggleProductModal();
+        renderInventory();
+        location.reload(); // Refresh to update dropdowns
     }
 
-    function addItemInputRow() {
-        const container = document.getElementById('item-inputs');
-        const options = state.products.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join('');
+    function renderInventory() {
+        let html = '';
+        db.products.forEach(p => {
+            html += `<tr class="border-b border-slate-50">
+                <td class="p-4 font-bold text-slate-800">${p.name}</td>
+                <td class="p-4">₹${p.price}</td>
+                <td class="p-4"><span class="px-2 py-1 bg-slate-100 rounded-lg text-indigo-600 font-black">${p.stock}</span></td>
+            </tr>`;
+        });
+        document.getElementById('inventory-table-body').innerHTML = html;
+    }
+
+    // BILLING LOGIC
+    function addBillRow() {
+        const options = db.products.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join('');
         const html = `
-        <div class="flex gap-2 item-row">
-            <select class="p-sel flex-1 bg-slate-50 p-4 rounded-xl font-bold outline-none border border-slate-100 focus:border-indigo-500" onchange="updatePreview()">
+        <div class="bill-row flex gap-2">
+            <select class="item-sel input-box flex-1" onchange="updatePreview()">
                 <option value="">Select Item</option>
                 ${options}
             </select>
-            <input type="number" class="p-qty w-20 bg-slate-50 p-4 rounded-xl font-bold outline-none border border-slate-100" value="1" oninput="updatePreview()">
+            <input type="number" class="item-qty input-box w-20" value="1" oninput="updatePreview()">
         </div>`;
-        container.insertAdjacentHTML('beforeend', html);
-    }
-
-    function refreshInputs() {
-        document.getElementById('item-inputs').innerHTML = '';
-        addItemInputRow();
+        document.getElementById('bill-items-list').insertAdjacentHTML('beforeend', html);
     }
 
     function updatePreview() {
-        document.getElementById('p-label').innerText = document.getElementById('doc-type').value;
-        document.getElementById('p-cust-name').innerText = document.getElementById('cust-name').value || "Walk-in Customer";
-        document.getElementById('p-cust-details').innerText = document.getElementById('cust-details').value || "Not Provided";
-        document.getElementById('p-date').innerText = new Date().toLocaleDateString();
-        document.getElementById('p-inv-no').innerText = "#INV-" + state.nextInv.toString().padStart(4, '0');
+        // Update Shop Info on Invoice
+        document.getElementById('prev-shop-name').innerText = db.shop.name;
+        document.getElementById('prev-shop-info').innerHTML = `${db.shop.address}<br>GSTIN: ${db.shop.gst}`;
+        
+        document.getElementById('prev-doc-label').innerText = document.getElementById('doc-type').value;
+        document.getElementById('prev-cust-name').innerText = document.getElementById('cust-name').value || "Walk-in Customer";
+        document.getElementById('prev-cust-info').innerText = document.getElementById('cust-contact').value || "No Details";
+        document.getElementById('prev-date').innerText = new Date().toLocaleDateString();
+        document.getElementById('prev-inv-no').innerText = "#INV-" + (db.sales.length + 1).toString().padStart(4, '0');
 
         let subtotal = 0;
-        let itemsHtml = '';
-        const rows = document.querySelectorAll('.item-row');
-
-        rows.forEach(row => {
-            const pid = row.querySelector('.p-sel').value;
-            const qty = parseInt(row.querySelector('.p-qty').value) || 0;
-            const product = state.products.find(x => x.id == pid);
-
-            if(product) {
-                const total = product.price * qty;
-                subtotal += total;
-                itemsHtml += `
-                <tr class="border-b border-slate-50">
-                    <td class="py-5">
-                        <p class="font-black text-slate-800 text-sm">${product.name}</p>
-                    </td>
-                    <td class="text-center font-bold text-slate-500">${qty}</td>
-                    <td class="text-right font-bold text-slate-500">₹${product.price.toLocaleString()}</td>
-                    <td class="text-right font-black text-slate-900">₹${total.toLocaleString()}</td>
+        let html = '';
+        document.querySelectorAll('.bill-row').forEach(row => {
+            const pid = row.querySelector('.item-sel').value;
+            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+            const p = db.products.find(x => x.id == pid);
+            if(p) {
+                const rowTotal = p.price * qty;
+                subtotal += rowTotal;
+                html += `<tr class="border-b border-slate-50">
+                    <td class="py-4 text-slate-900">${p.name}</td>
+                    <td class="text-center">${qty}</td>
+                    <td class="text-right">₹${p.price}</td>
+                    <td class="text-right text-slate-900 font-black">₹${rowTotal.toFixed(2)}</td>
                 </tr>`;
             }
         });
-
-        const tax = subtotal * 0.18;
-        const grand = subtotal + tax;
-
-        document.getElementById('p-items').innerHTML = itemsHtml || '<tr><td colspan="4" class="py-20 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">No items added to invoice</td></tr>';
-        document.getElementById('p-subtotal').innerText = '₹' + subtotal.toFixed(2);
-        document.getElementById('p-tax').innerText = '₹' + tax.toFixed(2);
-        document.getElementById('p-grand-total').innerText = '₹' + grand.toLocaleString();
+        document.getElementById('prev-items-list').innerHTML = html;
+        document.getElementById('prev-sub').innerText = '₹' + subtotal.toFixed(2);
+        document.getElementById('prev-grand').innerText = '₹' + subtotal.toFixed(2);
     }
 
-    function processAndSave() {
-        const type = document.getElementById('doc-type').value;
-        const cust = document.getElementById('cust-name').value || "Walk-in Customer";
-        let subtotal = 0;
+    function generateTransaction() {
+        const sub = parseFloat(document.getElementById('prev-grand').innerText.replace('₹',''));
+        if(sub <= 0) return alert("Select products first!");
 
-        document.querySelectorAll('.item-row').forEach(row => {
-            const pid = row.querySelector('.p-sel').value;
-            const qty = parseInt(row.querySelector('.p-qty').value) || 0;
-            const product = state.products.find(x => x.id == pid);
-
-            if(product) {
-                if(type === "PURCHASE INVOICE") product.stock += qty;
-                else product.stock -= qty;
-                subtotal += (product.price * qty);
-            }
+        db.sales.push({ date: new Date().toLocaleDateString(), customer: document.getElementById('prev-cust-name').innerText, amount: sub });
+        
+        // Deduct Stock
+        document.querySelectorAll('.bill-row').forEach(row => {
+            const pid = row.querySelector('.item-sel').value;
+            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+            const p = db.products.find(x => x.id == pid);
+            if(p) p.stock -= qty;
         });
 
-        state.sales.push({ id: state.nextInv, date: new Date().toLocaleDateString(), customer: cust, amount: subtotal, type });
-        state.nextInv++;
-        localStorage.setItem('bh_stock', JSON.stringify(state.products));
-        localStorage.setItem('bh_data', JSON.stringify(state.sales));
-        
-        alert("Success: " + type + " saved & stock updated!");
-        location.reload();
+        localStorage.setItem('bh3_sales', JSON.stringify(db.sales));
+        localStorage.setItem('bh3_stock', JSON.stringify(db.products));
+
+        // PDF Generation
+        const opt = { margin: 0, filename: 'Invoice.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+        html2pdf().set(opt).from(document.getElementById('invoice-wrapper')).save().then(() => {
+            alert("Bill Saved Successfully!");
+            location.reload();
+        });
     }
 
-    function downloadPDF() {
-        const element = document.getElementById('invoice-wrapper');
-        const opt = {
-            margin: 0,
-            filename: 'BH_Invoice_' + state.nextInv + '.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 3, zoom: 1 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
+    function renderReports() {
+        let html = '';
+        db.sales.reverse().forEach(s => {
+            html += `<div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between">
+                <div><p class="font-black">${s.customer}</p><p class="text-xs text-slate-400">${s.date}</p></div>
+                <div class="text-indigo-600 font-black text-lg">₹${s.amount.toFixed(2)}</div>
+            </div>`;
+        });
+        document.getElementById('reports-list').innerHTML = html || '<p class="text-slate-400 text-center py-10">No sales records.</p>';
     }
 
+    function autoScaleInvoice() {
+        const wrapper = document.getElementById('invoice-wrapper');
+        const container = wrapper.parentElement;
+        const scale = (container.offsetWidth - 80) / 794; 
+        if(scale < 1) wrapper.style.transform = `scale(${scale})`;
+    }
 </script>
+
 </body>
 </html>
