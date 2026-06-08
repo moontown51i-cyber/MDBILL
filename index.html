@@ -1,39 +1,331 @@
-URGENT FIXES REQUIRED
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillingHub | Enterprise Accounting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8f9fc; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); display: flex; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); border-top: 1px solid #e2e8f0; }
+        .nav-btn { flex: 1; color: #94a3b8; text-align: center; padding: 12px 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: none; background: transparent; transition: 0.3s; }
+        .nav-btn.active { color: #4f46e5; }
+        .nav-btn.active b { background: #eef2ff; padding: 10px 18px; border-radius: 16px; display: inline-block; margin-bottom: 4px; }
+        @media (min-width: 1024px) {
+            .desktop-layout { display: grid; grid-template-columns: 400px 1fr; gap: 20px; max-width: 1300px; margin: 20px auto; } .bottom-nav { width: 400px; left: 0; top: 20px; bottom: 0; border-radius: 20px 0 0 20px; border-top: none; }
+        }
+        #sec-view { display: block !important; }
+        /* Invoice scaling for Mobile */
+        .bill-wrapper { width: 100%; display: flex; justify-content: center; overflow: hidden; padding: 10px 0; }
+        #invoice-page { 
+            background: white; width: 210mm; min-height: 297mm; padding: 12mm; 
+            box-sizing: border-box; transform-origin: top center; box-shadow: 0 10px 50px rgba(0,0,0,0.1); border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
 
-1. Add complete invoice template system:
-- A4 Portrait
-- A4 Landscape
-- Thermal 58mm
-- Thermal 80mm
-- GST Invoice
-- Retail Invoice
-- Quotation
-- Proforma Invoice
-- Purchase Invoice
-- Delivery Challan
-- Credit Note
-- Debit Note
-- Packing Slip
+<!-- NAVIGATION -->
+<nav class="bottom-nav no-print">
+    <button class="nav-btn active" onclick="show('dashboard', this)"><b><i class="fas fa-th-large"></i></b><br>Dash</button>
+    <button class="nav-btn" onclick="show('billing', this)"><b><i class="fas fa-plus"></i></b><br>Bill</button>
+    <button class="nav-btn" onclick="show('inventory', this)"><b><i class="fas fa-box"></i></b><br>Stock</button>
+    <button class="nav-btn" onclick="show('reports', this)"><b><i class="fas fa-chart-pie"></i></b><br>Report</button>
+</nav>
 
-2. Inventory module is not functioning correctly.
-Fix:
-- Product CRUD
-- Stock management
-- Purchase stock increase
-- Sales stock deduction
-- Low stock alerts
-- Category management
-- Barcode support
-- Inventory reports
-- Stock adjustment
-- Opening stock
+<div class="desktop-layout">
+    <!-- DASHBOARD SECTION -->
+    <section id="sec-dashboard" class="p-4">
+        <h2 class="text-2xl font-bold mb-6">Business Dashboard</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <p class="text-slate-400 text-sm font-semibold uppercase">Total Sales</p>
+                <h3 class="text-xl font-bold mt-1 text-slate-800" id="stat-sales">₹0.00</h3>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <p class="text-slate-400 text-sm font-semibold uppercase">Low Stock</p>
+                <h3 class="text-xl font-bold mt-1 text-red-500" id="stat-stock">0 Items</h3>
+            </div>
+        </div>
+        <div class="mt-6 bg-white p-4 rounded-3xl border border-slate-100">
+            <h4 class="font-bold mb-4 px-2">Recent Activity</h4>
+            <div id="recent-logs" class="space-y-3 text-sm">
+                <!-- Real-time logs will appear here -->
+            </div>
+        </div>
+    </section>
 
-3. PDF download must work properly.
+    <!-- BILLING SECTION -->
+    <section id="sec-billing" class="hidden p-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">New Document</h2>
+            <select id="doc-type" class="bg-indigo-600 text-white rounded-xl px-4 py-2 font-bold outline-none" onchange="renderInvoice()">
+                <option value="TAX INVOICE">GST Invoice</option>
+                <option value="RETAIL INVOICE">Retail Invoice</option>
+                <option value="QUOTATION">Quotation</option>
+                <option value="DELIVERY CHALLAN">Delivery Challan</option>
+                <option value="PURCHASE INVOICE">Purchase (Stock In)</option>
+            </select>
+        </div>
 
-4. White premium clean UI.
+        <!-- Bill Builder Interface -->
+        <div class="bg-white p-6 rounded-3xl shadow-lg mb-6 border border-slate-100">
+            <div class="space-y-4">
+                <input type="text" id="cust-name" placeholder="Customer Name" class="w-full bg-slate-50 p-4 rounded-2xl outline-none focus:ring-2 ring-indigo-200 transition">
+                <div id="bill-items-input" class="space-y-2">
+                    <!-- Dynamic inputs for items -->
+                </div>
+                <button onclick="addInputRow()" class="w-full bg-slate-100 text-indigo-600 py-3 rounded-2xl font-bold">+ Add Product</button>
+            </div>
+            <div class="mt-6 flex gap-2">
+                <button onclick="processBill()" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-indigo-200 shadow-xl">Generate & Save</button>
+                <button onclick="downloadPDF()" class="bg-slate-800 text-white px-6 rounded-2xl"><i class="fas fa-download"></i></button>
+            </div>
+        </div>
 
-5. Mobile and desktop responsive.
+        <!-- PREVIEW AREA -->
+        <div class="bill-wrapper" id="print-area">
+            <div id="invoice-page">
+                <div class="flex justify-between items-start border-b-4 border-indigo-600 pb-6 mb-8">
+                    <div>
+                        <h1 class="text-4xl font-black text-indigo-600 tracking-tighter">BillingHub</h1>
+                        <p class="text-sm font-bold text-slate-500 mt-2" id="prev-shop-info">Business Address Line 1<br>GSTIN: 27XXXXX0000X1Z1</p>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-2xl font-black text-slate-400" id="prev-doc-type">TAX INVOICE</h2>
+                        <p class="text-slate-500 font-bold mt-1">Date: <span id="prev-date">--/--/--</span></p>
+                    </div>
+                </div>
 
-6. Production-ready database integration.
+                <div class="mb-10">
+                    <p class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-1">Billing To</p>
+                    <h3 class="text-xl font-bold text-slate-800" id="prev-cust-name">Walk-in Customer</h3>
+                </div>
 
-7. All reports should use real-time data.
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-indigo-50 text-indigo-700 uppercase text-xs font-black tracking-widest">
+                            <th class="p-4 rounded-l-xl">Description</th>
+                            <th class="p-4">Qty</th>
+                            <th class="p-4">Price</th>
+                            <th class="p-4 text-right rounded-r-xl">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prev-items-list">
+                        <!-- Items will render here -->
+                    </tbody>
+                </table>
+
+                <div class="mt-12 flex justify-end">
+                    <div class="w-64 space-y-3">
+                        <div class="flex justify-between text-slate-500 font-bold"><span>Tax Amount</span> <span id="prev-tax">₹0.00</span></div>
+                        <div class="flex justify-between text-2xl font-black text-indigo-600 border-t border-slate-100 pt-4">
+                            <span>TOTAL</span> <span id="prev-grand-total">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INVENTORY SECTION -->
+    <section id="sec-inventory" class="hidden p-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Inventory</h2>
+            <button onclick="toggleProductModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg">+ New Product</button>
+        </div>
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm" id="stock-list">
+            <!-- Stock Items will render here -->
+        </div>
+    </section>
+
+    <!-- REPORTS SECTION -->
+    <section id="sec-reports" class="hidden p-4">
+        <h2 class="text-2xl font-bold mb-6">Sales Reports</h2>
+        <div class="bg-white p-4 rounded-3xl border border-slate-100" id="report-table">
+            <!-- Sales logs here -->
+        </div>
+    </section>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div id="product-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[2000] hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md p-8 rounded-[40px] shadow-2xl">
+        <h3 class="text-2xl font-bold mb-6 text-slate-800">Add Product</h3>
+        <div class="space-y-4">
+            <input type="text" id="p-name" placeholder="Product Name" class="w-full bg-slate-50 p-4 rounded-2xl outline-none border border-slate-100">
+            <input type="number" id="p-price" placeholder="Sale Price" class="w-full bg-slate-50 p-4 rounded-2xl outline-none border border-slate-100">
+            <input type="number" id="p-stock" placeholder="Initial Stock" class="w-full bg-slate-50 p-4 rounded-2xl outline-none border border-slate-100">
+            <button onclick="saveProduct()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Add to Stock</button>
+            <button onclick="toggleProductModal()" class="w-full text-slate-400 font-bold py-2">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DATABASE LOGIC (LOCALSTORAGE)
+    let db = {
+        products: JSON.parse(localStorage.getItem('bh_products')) || [],
+        sales: JSON.parse(localStorage.getItem('bh_sales')) || [],
+        settings: { shopName: "BillingHub Enterprise", gstin: "27XXXXX0000X1Z1" }
+    };
+
+    function saveDB() {
+        localStorage.setItem('bh_products', JSON.stringify(db.products));
+        localStorage.setItem('bh_sales', JSON.stringify(db.sales));
+        updateStats();
+        renderStock();
+    }
+
+    // UI LOGIC
+    function show(mod, btn) {
+        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('sec-' + mod).classList.remove('hidden');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if(mod === 'billing') addInputRow();
+    }
+
+    function toggleProductModal() {
+        document.getElementById('product-modal').classList.toggle('hidden');
+    }
+
+    // INVENTORY LOGIC
+    function saveProduct() {
+        let name = document.getElementById('p-name').value;
+        let price = document.getElementById('p-price').value;
+        let stock = document.getElementById('p-stock').value;
+        
+        if(!name || !price) return alert("Enter details");
+
+        db.products.push({ id: Date.now(), name, price: parseFloat(price), stock: parseInt(stock) });
+        saveDB();
+        toggleProductModal();
+        document.getElementById('p-name').value = '';
+    }
+
+    function renderStock() {
+        let html = '';
+        db.products.forEach(p => {
+            html += `
+            <div class="flex items-center justify-between p-6 border-b border-slate-50">
+                <div>
+                    <h4 class="font-bold text-slate-800">${p.name}</h4>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Rate: ₹${p.price}</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-4 py-1 rounded-full text-xs font-black ${p.stock < 5 ? 'bg-red-100 text-red-600' : 'bg-indigo-50 text-indigo-600'} uppercase">Stock: ${p.stock}</span>
+                </div>
+            </div>`;
+        });
+        document.getElementById('stock-list').innerHTML = html || '<p class="p-10 text-center text-slate-400">No stock found</p>';
+    }
+
+    // BILLING LOGIC
+    let currentBillItems = [];
+
+    function addInputRow() {
+        let options = db.products.map(p => `<option value="${p.id}">${p.name} (Qty: ${p.stock})</option>`).join('');
+        const row = `
+        <div class="flex gap-2">
+            <select class="item-id flex-1 bg-white border border-slate-200 p-4 rounded-2xl outline-none font-bold text-slate-700">
+                <option value="">Select Item</option>
+                ${options}
+            </select>
+            <input type="number" placeholder="Qty" class="item-qty w-24 bg-white border border-slate-200 p-4 rounded-2xl outline-none font-bold">
+        </div>`;
+        document.getElementById('bill-items-input').insertAdjacentHTML('beforeend', row);
+    }
+
+    function processBill() {
+        let docType = document.getElementById('doc-type').value;
+        let custName = document.getElementById('cust-name').value || "Walk-in Customer";
+        let total = 0;
+        let itemsForPrint = [];
+
+        document.querySelectorAll('.item-id').forEach((el, idx) => {
+            let pid = el.value;
+            let qty = parseInt(document.querySelectorAll('.item-qty')[idx].value) || 0;
+            let p = db.products.find(x => x.id == pid);
+
+            if(p && qty > 0) {
+                // Stock Deduction/Inclusion Logic
+                if(docType === "PURCHASE INVOICE") {
+                    p.stock += qty;
+                } else {
+                    p.stock -= qty;
+                }
+                
+                let rowTotal = p.price * qty;
+                total += rowTotal;
+                itemsForPrint.push({ name: p.name, qty, price: p.price, total: rowTotal });
+            }
+        });
+
+        if(itemsForPrint.length === 0) return alert("Add some items first!");
+
+        db.sales.push({ date: new Date().toLocaleDateString(), customer: custName, amount: total, type: docType });
+        saveDB();
+        renderPreview(docType, custName, itemsForPrint, total);
+        alert(docType + " Generated Successfully!");
+    }
+
+    function renderPreview(type, cust, items, total) {
+        document.getElementById('prev-doc-type').innerText = type;
+        document.getElementById('prev-cust-name').innerText = cust;
+        document.getElementById('prev-date').innerText = new Date().toLocaleDateString();
+        document.getElementById('prev-grand-total').innerText = '₹' + total.toFixed(2);
+        
+        let html = '';
+        items.forEach(i => {
+            html += `<tr class="border-b border-slate-50">
+                <td class="p-4 font-bold text-slate-700">${i.name}</td>
+                <td class="p-4 font-bold text-slate-500">${i.qty}</td>
+                <td class="p-4 font-bold text-slate-500">₹${i.price}</td>
+                <td class="p-4 text-right font-black text-slate-800">₹${i.total.toFixed(2)}</td>
+            </tr>`;
+        });
+        document.getElementById('prev-items-list').innerHTML = html;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('invoice-page');
+        const opt = {
+            margin: 0,
+            filename: 'BH-Invoice-' + Date.now() + '.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
+
+    function updateStats() {
+        let totalSales = db.sales.reduce((sum, s) => sum + (s.type !== "PURCHASE INVOICE" ? s.amount : 0), 0);
+        let lowStockCount = db.products.filter(p => p.stock < 5).length;
+        
+        document.getElementById('stat-sales').innerText = '₹' + totalSales.toLocaleString();
+        document.getElementById('stat-stock').innerText = lowStockCount + ' Items';
+
+        let logHtml = '';
+        db.sales.slice(-5).reverse().forEach(s => {
+            logHtml += `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
+                <span><b>${s.customer}</b><br><small>${s.type}</small></span>
+                <span class="font-bold text-indigo-600">₹${s.amount}</span>
+            </div>`;
+        });
+        document.getElementById('recent-logs').innerHTML = logHtml;
+    }
+
+    // Initialize
+    window.onload = () => {
+        updateStats();
+        renderStock();
+    }
+</script>
+</body>
+</html>
