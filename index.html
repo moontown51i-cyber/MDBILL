@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillingHub Pro | v7.5 Download Fix</title>
+    <title>BillingHub Ultimate | Enterprise Suite v8.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PDF Library Fix -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,27 +12,22 @@
         :root { --inv-font-size: 14px; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f4f7fa; margin: 0; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; padding: 20px; }
-        .app-grid { display: grid; grid-template-columns: 260px 1fr 1.2fr; height: 100vh; width: 100%; }
+        .app-grid { display: grid; grid-template-columns: 260px 1fr 1.3fr; height: 100vh; width: 100%; }
         .form-col { background: #f8fafc; padding: 25px; overflow-y: auto; border-right: 1px solid #e2e8f0; }
         .preview-col { background: #475569; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; position: relative; }
         
-        /* THE INVOICE */
         #invoice-preview { 
             background: white; width: 210mm; min-height: 297mm; padding: 15mm; 
             box-shadow: 0 40px 60px rgba(0,0,0,0.5); transform-origin: top center;
-            font-size: var(--inv-font-size);
-            position: relative;
+            font-size: var(--inv-font-size); position: relative;
         }
         
         [contenteditable="true"]:hover { background: #f0f7ff; outline: 1px dashed #4f46e5; cursor: text; }
-        
-        /* Floating Buttons Fix */
-        .action-bar { position: sticky; top: 0; background: #f8fafc; padding: 15px 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
-        
         .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #f1f5f9; }
         .input-field { width: 100%; background: #f1f5f9; padding: 12px; border-radius: 12px; border: 1px solid transparent; outline: none; font-size: 13px; font-weight: 600; }
+        .input-field:focus { background: white; border-color: #4f46e5; }
         .item-row-edit { display: grid; grid-template-columns: 1fr 60px 100px 40px; gap: 8px; align-items: center; margin-bottom: 8px; }
-
+        
         @media print { .no-print { display: none !important; } .preview-col { padding: 0; background: white; } #invoice-preview { box-shadow: none; transform: scale(1) !important; margin: 0; } }
     </style>
 </head>
@@ -42,9 +36,9 @@
 <div class="app-grid">
     <!-- SIDEBAR -->
     <aside class="sidebar no-print">
-        <h1 class="text-xl font-black italic text-indigo-400 mb-10">BillingHub <span class="text-[10px] block text-white opacity-50 uppercase tracking-widest text-center">v7.5 Fix</span></h1>
+        <h1 class="text-xl font-black italic text-indigo-400 mb-10">BillingHub <span class="text-[10px] block text-white opacity-50 uppercase tracking-[3px] mt-1">Ultimate v8.0</span></h1>
         
-        <div class="space-y-6">
+        <div class="space-y-8">
             <div>
                 <label class="text-[10px] font-black uppercase text-slate-500 block mb-3 tracking-widest text-center">A4 Font Adjuster</label>
                 <input type="range" min="10" max="24" value="14" class="w-full accent-indigo-500" oninput="changeFontSize(this.value)">
@@ -52,71 +46,109 @@
             </div>
 
             <div class="pt-6 border-t border-slate-800">
-                <button onclick="location.reload()" class="w-full text-center p-3 rounded-xl border border-slate-700 text-slate-400 font-bold text-xs mb-3 hover:bg-slate-800"><i class="fas fa-sync mr-2"></i> Reset Form</button>
-                <button onclick="saveAndRecord()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black shadow-lg hover:bg-emerald-700 transition uppercase tracking-widest text-xs">Finalize Shop Info</button>
+                <button onclick="location.reload()" class="w-full p-3 rounded-xl border border-slate-700 text-slate-400 font-bold text-xs mb-3 hover:bg-slate-800"><i class="fas fa-sync mr-2"></i> New Transaction</button>
+                <button onclick="saveShopData()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black shadow-lg hover:bg-emerald-700 transition text-xs uppercase tracking-widest">Update Shop Info</button>
+            </div>
+            
+            <div class="p-4 bg-slate-800 rounded-2xl">
+                <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Inventory Quick Add</p>
+                <button onclick="quickAddProduct()" class="w-full bg-indigo-500 text-white py-2 rounded-lg text-xs font-bold">+ New Item</button>
             </div>
         </div>
     </aside>
 
     <!-- FORM COLUMN -->
     <main class="form-col no-print">
-        <div class="action-bar">
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Create Document</h2>
+        <div class="flex justify-between items-center mb-6 sticky top-0 bg-[#f8fafc] py-2 z-10">
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Bill Generator</h2>
             <div class="flex gap-2">
-                <!-- DOWNLOAD & PRINT BUTTONS HERE -->
-                <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition"><i class="fas fa-file-pdf mr-2"></i> Download PDF</button>
-                <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-black transition"><i class="fas fa-print mr-2"></i> Print</button>
+                <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition"><i class="fas fa-file-pdf mr-2"></i> PDF</button>
+                <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-black transition"><i class="fas fa-print mr-2"></i> Print</button>
             </div>
         </div>
 
-        <div class="card">
-            <label class="text-[10px] font-black text-slate-400 uppercase block mb-3">Invoice Details</label>
-            <div class="space-y-3">
+        <!-- Template & Tax Selector Combined -->
+        <div class="card grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase block mb-2">Doc Type</label>
                 <select id="doc-type" class="input-field" onchange="updatePreview()">
                     <option value="TAX INVOICE">Tax Invoice</option>
-                    <option value="QUOTATION">Quotation / Estimate</option>
-                    <option value="RETAIL BILL">Retail Bill</option>
+                    <option value="QUOTATION">Quotation</option>
                     <option value="E-WAY BILL">E-Way Bill</option>
+                    <option value="RETAIL BILL">Retail Bill</option>
+                    <option value="DELIVERY CHALLAN">Delivery Challan</option>
                 </select>
-                <input type="text" id="cust-name" placeholder="Party / Customer Name" class="input-field" oninput="updatePreview()">
-                <textarea id="cust-info" placeholder="Address & Phone" class="input-field h-16" oninput="updatePreview()"></textarea>
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase block mb-2">Tax Mode</label>
+                <select id="tax-mode" class="input-field" onchange="updatePreview()">
+                    <option value="GST">GST (CGST/SGST)</option>
+                    <option value="NON-GST">Non-GST</option>
+                </select>
             </div>
         </div>
 
         <div class="card">
-            <label class="text-[10px] font-black text-slate-400 uppercase block mb-3">Items (Add/Edit Below)</label>
-            <div id="items-list-container" class="space-y-3">
-                <!-- Rows injected here -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-2">GST Rate (%)</label>
+                    <select id="gst-rate" class="input-field" onchange="updatePreview()">
+                        <option value="18">18% GST</option>
+                        <option value="12">12% GST</option>
+                        <option value="5">5% GST</option>
+                        <option value="28">28% GST</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-2">Vehicle No (Optional)</label>
+                    <input type="text" id="veh-no" placeholder="MH-01-..." class="input-field" oninput="updatePreview()">
+                </div>
             </div>
-            <button onclick="addItemRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600 transition">+ Add Product Line</button>
+            <input type="text" id="cust-name" placeholder="Customer / Party Name" class="input-field mb-3" oninput="updatePreview()">
+            <textarea id="cust-info" placeholder="Party Address & Contact" class="input-field h-16" oninput="updatePreview()"></textarea>
         </div>
+
+        <!-- Dynamic Item Editor -->
+        <div class="card">
+            <label class="text-[10px] font-black text-slate-400 uppercase block mb-4">Add/Edit Bill Items</label>
+            <div id="items-list-container" class="space-y-2"></div>
+            <button onclick="addItemRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600 transition">+ Add Item Row</button>
+        </div>
+        
+        <button onclick="saveTransaction()" class="w-full bg-[#0f172a] text-white py-5 rounded-2xl font-black text-lg shadow-2xl hover:bg-black transition uppercase tracking-widest">Save Transaction</button>
     </main>
 
     <!-- PREVIEW COLUMN -->
     <section class="preview-col">
-        <div class="no-print bg-indigo-900 text-white px-4 py-2 rounded-full text-[10px] font-bold mb-4 animate-pulse">
-            <i class="fas fa-edit mr-2"></i> Direct Edit Mode: Click any text on the bill to change it!
+        <div class="no-print bg-indigo-900 text-white px-4 py-2 rounded-full text-[10px] font-bold mb-4">
+            <i class="fas fa-mouse-pointer mr-2"></i> Click any text on invoice to edit directly
         </div>
         
         <div id="invoice-preview">
             <!-- Header -->
             <div class="flex justify-between items-start border-b-8 border-slate-900 pb-8 mb-10">
                 <div>
-                    <h1 id="p-shop-name" contenteditable="true" class="text-4xl font-black text-slate-900 uppercase tracking-tighter">YOUR BUSINESS</h1>
-                    <p id="p-shop-info" contenteditable="true" class="text-sm text-slate-500 font-bold mt-3 leading-relaxed">Shop Address, City, State<br>GSTIN: 27XXXXX0000X1Z1</p>
+                    <h1 id="p-shop-name" contenteditable="true" class="text-4xl font-black text-slate-900 uppercase tracking-tighter">MY BUSINESS</h1>
+                    <p id="p-shop-info" contenteditable="true" class="text-sm text-slate-500 font-bold mt-3 leading-relaxed">Street Address, City, State<br>GSTIN: 27XXXXX0000X1Z1</p>
                 </div>
                 <div class="text-right">
                     <span id="p-doc-label" contenteditable="true" class="bg-slate-900 text-white px-4 py-1 text-[10px] font-black rounded uppercase tracking-widest">TAX INVOICE</span>
                     <p class="text-3xl font-black mt-6" id="p-inv-no">#INV-1001</p>
-                    <p contenteditable="true" class="text-slate-400 font-bold text-sm mt-1" id="p-date">Date: 07/06/2026</p>
+                    <p contenteditable="true" class="text-slate-400 font-bold text-sm mt-1" id="p-date">07/06/2026</p>
                 </div>
             </div>
 
-            <!-- Client Info -->
-            <div class="mb-12">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Billed To</p>
-                <h3 id="p-cust-name" contenteditable="true" class="text-2xl font-black text-slate-900">Walk-in Customer</h3>
-                <p id="p-cust-info" contenteditable="true" class="text-sm text-slate-500 font-bold leading-relaxed">Party details will appear here</p>
+            <!-- Party & Transport -->
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Billed To</p>
+                    <h3 id="p-cust-name" contenteditable="true" class="text-2xl font-black text-slate-900">Walk-in Customer</h3>
+                    <p id="p-cust-info" contenteditable="true" class="text-sm text-slate-500 font-bold leading-relaxed">Party details here</p>
+                </div>
+                <div id="p-veh-box" class="text-right">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Transport</p>
+                    <p id="p-veh-val" contenteditable="true" class="text-sm font-black text-slate-800 uppercase">--</p>
+                </div>
             </div>
 
             <!-- Table -->
@@ -129,16 +161,21 @@
                         <th class="py-4 text-right" width="120">Total</th>
                     </tr>
                 </thead>
-                <tbody id="p-items-body" class="font-bold text-slate-700 italic">
-                    <!-- Items go here -->
-                </tbody>
+                <tbody id="p-items-body" class="font-bold text-slate-700 italic"></tbody>
             </table>
 
             <!-- Totals -->
             <div class="flex justify-end pt-10 border-t-2 border-slate-100">
-                <div class="w-72 space-y-4">
-                    <div class="flex justify-between font-black text-slate-900 text-2xl border-t-8 border-slate-900 pt-6">
-                        <span class="tracking-tighter">GRAND TOTAL</span>
+                <div class="w-72 space-y-3">
+                    <div class="flex justify-between text-slate-400 font-bold text-sm"><span>Subtotal</span> <span id="p-subtotal">₹0.00</span></div>
+                    
+                    <div id="p-gst-section" class="space-y-3">
+                        <div class="flex justify-between text-slate-400 font-bold text-sm"><span>CGST (<span id="gst-h1">9</span>%)</span> <span id="p-cgst">₹0.00</span></div>
+                        <div class="flex justify-between text-slate-400 font-bold text-sm"><span>SGST (<span id="gst-h2">9</span>%)</span> <span id="p-sgst">₹0.00</span></div>
+                    </div>
+
+                    <div class="flex justify-between font-black text-slate-900 text-3xl border-t-8 border-slate-900 pt-6">
+                        <span class="tracking-tighter">TOTAL</span>
                         <span id="p-grand" class="text-indigo-600">₹0</span>
                     </div>
                 </div>
@@ -153,8 +190,9 @@
 
 <script>
     let db = {
-        shop: JSON.parse(localStorage.getItem('bh7_shop')) || { name: "YOUR BUSINESS", info: "Address Line 1\nGSTIN: 27XXXXX0000X1Z1" },
-        sales: []
+        shop: JSON.parse(localStorage.getItem('bh8_shop')) || { name: "MY BUSINESS", info: "Shop Address\nGSTIN: 27XXXXX0000X1Z1" },
+        stock: JSON.parse(localStorage.getItem('bh8_stock')) || [],
+        sales: JSON.parse(localStorage.getItem('bh8_sales')) || []
     };
 
     window.onload = () => {
@@ -167,6 +205,7 @@
     function loadShopData() {
         document.getElementById('p-shop-name').innerText = db.shop.name;
         document.getElementById('p-shop-info').innerText = db.shop.info;
+        document.getElementById('p-date').innerText = "Date: " + new Date().toLocaleDateString();
     }
 
     function changeFontSize(size) {
@@ -174,75 +213,79 @@
     }
 
     function addItemRow() {
-        const container = document.getElementById('items-list-container');
-        const rowId = Date.now();
+        const id = Date.now();
+        const options = db.stock.map(p => `<option value="${p.price}">${p.name}</option>`).join('');
         const html = `
-            <div class="item-row-edit" id="row-${rowId}">
-                <input type="text" placeholder="Item Name" class="item-name input-field" oninput="updatePreview()">
-                <input type="number" placeholder="Qty" class="item-qty input-field" value="1" oninput="updatePreview()">
-                <input type="number" placeholder="Rate" class="item-rate input-field" value="0" oninput="updatePreview()">
-                <button onclick="removeRow(${rowId})" class="text-red-400"><i class="fas fa-times-circle"></i></button>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', html);
-        updatePreview();
-    }
-
-    function removeRow(id) {
-        document.getElementById('row-' + id).remove();
-        updatePreview();
+            <div class="item-row-edit" id="row-${id}">
+                <input type="text" list="dl-${id}" placeholder="Item Name" class="i-name input-field" oninput="updatePreview()">
+                <datalist id="dl-${id}">${options}</datalist>
+                <input type="number" placeholder="Qty" class="i-qty input-field" value="1" oninput="updatePreview()">
+                <input type="number" placeholder="Rate" class="i-rate input-field" value="0" oninput="updatePreview()">
+                <button onclick="document.getElementById('row-${id}').remove(); updatePreview();" class="text-red-400"><i class="fas fa-times-circle"></i></button>
+            </div>`;
+        document.getElementById('items-list-container').insertAdjacentHTML('beforeend', html);
     }
 
     function updatePreview() {
+        const taxMode = document.getElementById('tax-mode').value;
+        const gstRate = parseFloat(document.getElementById('gst-rate').value);
+
         document.getElementById('p-doc-label').innerText = document.getElementById('doc-type').value;
         document.getElementById('p-cust-name').innerText = document.getElementById('cust-name').value || "Walk-in Customer";
-        document.getElementById('p-cust-info').innerText = document.getElementById('cust-info').value || "Party details will appear here";
-        
+        document.getElementById('p-cust-info').innerText = document.getElementById('cust-info').value || "Party details here";
+        document.getElementById('p-veh-val').innerText = document.getElementById('veh-no').value || "--";
+        document.getElementById('p-inv-no').innerText = "#INV-" + (db.sales.length + 1001);
+
         let subtotal = 0;
         let html = '';
-        
         document.querySelectorAll('.item-row-edit').forEach(row => {
-            const name = row.querySelector('.item-name').value;
-            const qty = parseInt(row.querySelector('.item-qty').value) || 0;
-            const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-            
+            const name = row.querySelector('.i-name').value;
+            const qty = parseInt(row.querySelector('.i-qty').value) || 0;
+            const rate = parseFloat(row.querySelector('.i-rate').value) || 0;
             if(name || rate > 0) {
                 const total = qty * rate;
                 subtotal += total;
-                html += `
-                    <tr class="border-b border-slate-50">
-                        <td class="py-5 text-slate-800" contenteditable="true">${name}</td>
-                        <td class="text-center" contenteditable="true">${qty}</td>
-                        <td class="text-right" contenteditable="true">₹${rate}</td>
-                        <td class="text-right font-black text-slate-900">₹${total.toLocaleString()}</td>
-                    </tr>
-                `;
+                html += `<tr class="border-b border-slate-50"><td class="py-5 text-slate-800" contenteditable="true">${name}</td><td class="text-center" contenteditable="true">${qty}</td><td class="text-right" contenteditable="true">₹${rate}</td><td class="text-right font-black text-slate-900">₹${total.toLocaleString()}</td></tr>`;
             }
         });
 
-        document.getElementById('p-items-body').innerHTML = html || '<tr><td colspan="4" class="py-20 text-center text-slate-200 uppercase font-bold">No Items Added</td></tr>';
-        document.getElementById('p-grand').innerText = '₹' + subtotal.toLocaleString();
+        document.getElementById('p-items-body').innerHTML = html || '<tr><td colspan="4" class="py-20 text-center text-slate-200 uppercase font-bold">No Items</td></tr>';
+        document.getElementById('p-subtotal').innerText = '₹' + subtotal.toFixed(2);
+
+        if(taxMode === 'GST') {
+            document.getElementById('p-gst-section').classList.remove('hidden');
+            const tax = subtotal * (gstRate / 100);
+            document.getElementById('gst-h1').innerText = gstRate / 2;
+            document.getElementById('gst-h2').innerText = gstRate / 2;
+            document.getElementById('p-cgst').innerText = '₹' + (tax / 2).toFixed(2);
+            document.getElementById('p-sgst').innerText = '₹' + (tax / 2).toFixed(2);
+            document.getElementById('p-grand').innerText = '₹' + (subtotal + tax).toLocaleString();
+        } else {
+            document.getElementById('p-gst-section').classList.add('hidden');
+            document.getElementById('p-grand').innerText = '₹' + subtotal.toLocaleString();
+        }
     }
 
-    // PDF DOWNLOAD FUNCTION FIX
     function downloadPDF() {
         const element = document.getElementById('invoice-preview');
-        // Hide edit outlines for PDF
-        const opt = { 
-            margin: 0, 
-            filename: 'Invoice_' + Date.now() + '.pdf', 
-            html2canvas: { scale: 3, useCORS: true }, 
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-        };
-        
-        html2pdf().set(opt).from(element).save();
+        html2pdf().set({ margin: 0, filename: 'Bill.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3 }, jsPDF: { format: 'a4', orientation: 'portrait' } }).from(element).save();
     }
 
-    function saveAndRecord() {
+    function saveShopData() {
         db.shop.name = document.getElementById('p-shop-name').innerText;
         db.shop.info = document.getElementById('p-shop-info').innerText;
-        localStorage.setItem('bh7_shop', JSON.stringify(db.shop));
-        alert("Shop details updated in template!");
+        localStorage.setItem('bh8_shop', JSON.stringify(db.shop));
+        alert("Shop Profile Updated!");
+    }
+
+    function quickAddProduct() {
+        const n = prompt("Item Name:");
+        const p = prompt("Price:");
+        if(n && p) {
+            db.stock.push({ name: n, price: p });
+            localStorage.setItem('bh8_stock', JSON.stringify(db.stock));
+            location.reload();
+        }
     }
 
     function autoScaleInvoice() {
@@ -252,6 +295,5 @@
         if(scale < 1) invoice.style.transform = `scale(${scale})`;
     }
 </script>
-
 </body>
 </html>
