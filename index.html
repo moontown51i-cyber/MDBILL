@@ -1,258 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillingHub | Professional Accounting Suite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .sidebar-link.active { background-color: #eff6ff; color: #2563eb; border-right: 4px solid #2563eb; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0; }
-        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
-    </style>
-</head>
-<body class="flex h-screen overflow-hidden">
+URGENT FIXES REQUIRED
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0 no-print flex flex-col">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
-                <i class="fas fa-file-invoice-dollar"></i> BillingHub
-            </h1>
-            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">Enterprise Edition</p>
-        </div>
-        
-        <nav class="flex-1 px-4 space-y-1">
-            <button onclick="showModule('dashboard')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition active" id="btn-dashboard">
-                <i class="fas fa-chart-line w-5"></i> Dashboard
-            </button>
-            <button onclick="showModule('billing')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-billing">
-                <i class="fas fa-plus-circle w-5"></i> Create Bill
-            </button>
-            <button onclick="showModule('inventory')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-inventory">
-                <i class="fas fa-box w-5"></i> Inventory
-            </button>
-            <button onclick="showModule('accounting')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-accounting">
-                <i class="fas fa-book w-5"></i> Accounting
-            </button>
-            <button onclick="showModule('reports')" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 text-slate-600 rounded-lg hover:bg-slate-50 transition" id="btn-reports">
-                <i class="fas fa-file-alt w-5"></i> Reports
-            </button>
-        </nav>
+1. Add complete invoice template system:
+- A4 Portrait
+- A4 Landscape
+- Thermal 58mm
+- Thermal 80mm
+- GST Invoice
+- Retail Invoice
+- Quotation
+- Proforma Invoice
+- Purchase Invoice
+- Delivery Challan
+- Credit Note
+- Debit Note
+- Packing Slip
 
-        <div class="p-4 border-t border-slate-100">
-            <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-lg">
-                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">AD</div>
-                <div>
-                    <p class="text-sm font-semibold text-slate-700">Admin User</p>
-                    <p class="text-xs text-slate-500">Business Owner</p>
-                </div>
-            </div>
-        </div>
-    </aside>
+2. Inventory module is not functioning correctly.
+Fix:
+- Product CRUD
+- Stock management
+- Purchase stock increase
+- Sales stock deduction
+- Low stock alerts
+- Category management
+- Barcode support
+- Inventory reports
+- Stock adjustment
+- Opening stock
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 overflow-y-auto relative">
-        
-        <!-- MODULE: DASHBOARD -->
-        <section id="mod-dashboard" class="p-8 space-y-8 animate-fade-in">
-            <div class="flex justify-between items-end">
-                <div>
-                    <h2 class="text-3xl font-bold text-slate-800">Business Overview</h2>
-                    <p class="text-slate-500">Welcome back! Here's what's happening today.</p>
-                </div>
-                <div class="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-full font-medium">
-                    <i class="far fa-calendar-alt"></i> June 07, 2024
-                </div>
-            </div>
+3. PDF download must work properly.
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-sm text-slate-500 font-medium">Daily Sales</p>
-                    <h3 class="text-2xl font-bold mt-1">₹45,280</h3>
-                    <span class="text-emerald-500 text-xs font-bold"><i class="fas fa-arrow-up"></i> 12.5%</span>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-sm text-slate-500 font-medium">Total Customers</p>
-                    <h3 class="text-2xl font-bold mt-1">1,240</h3>
-                </div>
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-amber-400">
-                    <p class="text-sm text-slate-500 font-medium">Stock Alerts</p>
-                    <h3 class="text-2xl font-bold mt-1 text-amber-600">08 Items</h3>
-                </div>
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-blue-600">
-                    <p class="text-sm text-slate-500 font-medium">Net Profit (Monthly)</p>
-                    <h3 class="text-2xl font-bold mt-1">₹1,85,000</h3>
-                </div>
-            </div>
+4. White premium clean UI.
 
-            <!-- Recent Transactions -->
-            <div class="glass-card rounded-2xl overflow-hidden">
-                <div class="p-6 border-bottom border-slate-100 flex justify-between items-center">
-                    <h4 class="font-bold text-slate-700">Recent Invoices</h4>
-                    <button class="text-blue-600 text-sm font-semibold">View All</button>
-                </div>
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                        <tr>
-                            <th class="px-6 py-4">Invoice ID</th>
-                            <th class="px-6 py-4">Customer</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm text-slate-600">
-                        <tr class="border-t border-slate-50 hover:bg-slate-50/50">
-                            <td class="px-6 py-4 font-medium text-slate-900">#INV-8821</td>
-                            <td class="px-6 py-4">Rahul Sharma</td>
-                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">PAID</span></td>
-                            <td class="px-6 py-4 font-bold">₹1,250.00</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+5. Mobile and desktop responsive.
 
-        <!-- MODULE: BILLING -->
-        <section id="mod-billing" class="hidden p-8">
-            <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border border-slate-200">
-                <div class="bg-slate-800 p-8 text-white flex justify-between items-start">
-                    <div>
-                        <h2 class="text-3xl font-bold tracking-tight">TAX INVOICE</h2>
-                        <p class="opacity-70 mt-1">BillingHub Enterprise Suite</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm opacity-70">Invoice Number</p>
-                        <input type="text" value="BH-2024-001" class="bg-transparent text-xl font-bold text-right outline-none">
-                    </div>
-                </div>
+6. Production-ready database integration.
 
-                <div class="p-8 grid grid-cols-2 gap-12">
-                    <div>
-                        <p class="text-xs font-bold text-blue-600 uppercase mb-2">From</p>
-                        <input type="text" value="BillingHub Solutions" class="text-lg font-bold block w-full outline-none">
-                        <textarea class="w-full text-sm text-slate-500 mt-1 resize-none outline-none" rows="3">GSTIN: 27AAAAA0000A1Z5&#10;Tower A, Business Park&#10;Mumbai, MH 400001</textarea>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-blue-600 uppercase mb-2">Bill To</p>
-                        <input type="text" placeholder="Client Name" class="text-lg font-bold block w-full outline-none border-b border-slate-100 focus:border-blue-400">
-                        <textarea class="w-full text-sm text-slate-500 mt-1 resize-none outline-none" rows="3" placeholder="Address & GST Number"></textarea>
-                    </div>
-                </div>
-
-                <div class="px-8 pb-8">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b-2 border-slate-100">
-                                <th class="py-3 text-left text-slate-400 font-semibold text-sm">Description</th>
-                                <th class="py-3 text-center text-slate-400 font-semibold text-sm" width="100">Qty</th>
-                                <th class="py-3 text-right text-slate-400 font-semibold text-sm" width="150">Price</th>
-                                <th class="py-3 text-right text-slate-400 font-semibold text-sm" width="150">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="billItems">
-                            <tr class="border-b border-slate-50">
-                                <td class="py-4"><input type="text" placeholder="Item Name" class="w-full outline-none font-medium"></td>
-                                <td class="py-4"><input type="number" value="1" class="w-full text-center outline-none"></td>
-                                <td class="py-4"><input type="number" value="0" class="w-full text-right outline-none px-2 font-semibold"></td>
-                                <td class="py-4 text-right font-bold text-slate-800">₹0.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button class="mt-4 text-blue-600 font-bold text-sm no-print" onclick="addItemRow()">+ ADD ITEM</button>
-                    
-                    <div class="mt-8 flex justify-end">
-                        <div class="w-64 space-y-3">
-                            <div class="flex justify-between text-slate-500"><span>Sub Total</span> <span class="font-bold text-slate-800">₹0.00</span></div>
-                            <div class="flex justify-between text-slate-500"><span>GST (18%)</span> <span class="font-bold text-slate-800">₹0.00</span></div>
-                            <div class="flex justify-between text-xl border-t border-slate-100 pt-3">
-                                <span class="font-bold text-slate-800">Grand Total</span>
-                                <span class="font-black text-blue-600">₹0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-8 flex justify-center gap-4 no-print">
-                <button class="px-8 py-3 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:scale-105 transition" onclick="window.print()">
-                    <i class="fas fa-print mr-2"></i> Print & WhatsApp
-                </button>
-                <button class="px-8 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold shadow-sm" onclick="showModule('dashboard')">
-                    Save as Draft
-                </button>
-            </div>
-        </section>
-
-        <!-- MODULE: INVENTORY -->
-        <section id="mod-inventory" class="hidden p-8">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">Stock Management</h2>
-                <button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold shadow-md">+ New Product</button>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div class="p-4 bg-slate-50 border-b border-slate-200 flex gap-4">
-                    <input type="text" placeholder="Search product or scan barcode..." class="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 ring-blue-100">
-                    <select class="bg-white border border-slate-200 rounded-lg px-4 py-2 outline-none">
-                        <option>All Categories</option>
-                        <option>Electronics</option>
-                        <option>FMCG</option>
-                    </select>
-                </div>
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                        <tr>
-                            <th class="px-6 py-4">Product Name</th>
-                            <th class="px-6 py-4 text-center">In Stock</th>
-                            <th class="px-6 py-4">Price</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm">
-                        <tr class="border-t border-slate-100">
-                            <td class="px-6 py-4 font-semibold text-slate-800">Apple iPhone 15 Pro</td>
-                            <td class="px-6 py-4 text-center font-bold">42</td>
-                            <td class="px-6 py-4">₹1,14,000</td>
-                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold uppercase tracking-tight">Available</span></td>
-                            <td class="px-6 py-4"><button class="text-blue-600 hover:underline">Edit</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        function showModule(modId) {
-            // Hide all
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            
-            // Show target
-            document.getElementById('mod-' + modId).classList.remove('hidden');
-            document.getElementById('btn-' + modId).classList.add('active');
-        }
-
-        function addItemRow() {
-            const row = `<tr class="border-b border-slate-50">
-                <td class="py-4"><input type="text" placeholder="Item Name" class="w-full outline-none font-medium text-slate-700"></td>
-                <td class="py-4"><input type="number" value="1" class="w-full text-center outline-none"></td>
-                <td class="py-4"><input type="number" value="0" class="w-full text-right outline-none px-2 font-semibold"></td>
-                <td class="py-4 text-right font-bold text-slate-800">₹0.00</td>
-            </tr>`;
-            document.getElementById('billItems').insertAdjacentHTML('beforeend', row);
-        }
-
-        // Module Switcher Animation Logic
-        window.addEventListener('DOMContentLoaded', () => {
-            showModule('dashboard');
-        });
-    </script>
-</body>
-</html>
+7. All reports should use real-time data.
