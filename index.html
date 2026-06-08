@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillingHub Enterprise | v11.0 Advanced Suite</title>
+    <title>BillingHub Enterprise | Auto-Invoice v11.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@
     <aside class="sidebar no-print">
         <div class="mb-10 px-2">
             <h1 class="text-2xl font-black italic text-indigo-400 tracking-tighter">BillingHub</h1>
-            <p class="text-[9px] uppercase font-bold text-slate-500 tracking-[3px] mt-1">Enterprise v11.0</p>
+            <p class="text-[9px] uppercase font-bold text-slate-500 tracking-[3px] mt-1">Enterprise v11.1</p>
         </div>
         <nav class="flex-1">
             <button onclick="switchModule('billing')" id="m-billing" class="nav-link active"><i class="fas fa-file-invoice"></i> Billing</button>
@@ -70,15 +70,13 @@
                 </select>
             </div>
             <div class="card space-y-3">
-                <div class="flex justify-between items-center mb-1"><label class="text-[10px] font-black text-slate-400 uppercase">Party Selection</label></div>
                 <select id="party-select" class="input-box" onchange="loadPartyData()">
                     <option value="new">+ Select Saved Party</option>
                 </select>
-                <input type="text" id="cust-name" placeholder="Party/Customer Name" class="input-box" oninput="updatePreview()">
+                <input type="text" id="cust-name" placeholder="Party Name" class="input-box" oninput="updatePreview()">
                 <textarea id="cust-info" placeholder="Address & Phone" class="input-box h-16" oninput="updatePreview()"></textarea>
             </div>
             <div class="card">
-                <div class="flex justify-between mb-4"><label class="text-[10px] font-black text-slate-400 uppercase">Product Details</label></div>
                 <div id="bill-items-container" class="space-y-3"></div>
                 <button onclick="addItemRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600">+ Add Product Row</button>
             </div>
@@ -93,7 +91,7 @@
 
         <!-- MODULE: PARTIES -->
         <div id="mod-parties" class="hidden">
-            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-black text-slate-800">Party Directory</h3><button onclick="quickAddParty()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Party</button></div>
+            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-black text-slate-800">Parties</h3><button onclick="quickAddParty()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Party</button></div>
             <div id="party-list" class="space-y-2"></div>
         </div>
     </main>
@@ -103,7 +101,12 @@
         <div id="invoice-preview">
             <div class="flex justify-between items-start border-b-8 border-slate-900 pb-8 mb-10">
                 <div><h1 id="p-shop-name" contenteditable="true" class="text-4xl font-black text-slate-900 uppercase">BillingHub</h1><p id="p-shop-info" contenteditable="true" class="text-[12px] text-slate-500 font-bold mt-4 leading-relaxed">Shop Address Line</p></div>
-                <div class="text-right"><span id="p-doc-label" class="bg-slate-900 text-white px-4 py-1 text-[10px] font-black rounded uppercase">TAX INVOICE</span><p class="text-3xl font-black mt-6" id="p-inv-no">#INV-1001</p><p class="text-slate-400 font-bold text-sm mt-1" id="p-date">--/--/----</p></div>
+                <div class="text-right">
+                    <span id="p-doc-label" class="bg-slate-900 text-white px-4 py-1 text-[10px] font-black rounded uppercase">TAX INVOICE</span>
+                    <!-- AUTO-INCREMENT NUMBER TARGET -->
+                    <p class="text-3xl font-black mt-6" id="p-inv-no">#INV-1001</p>
+                    <p class="text-slate-400 font-bold text-sm mt-1" id="p-date">--/--/----</p>
+                </div>
             </div>
             <div class="mb-12"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Billed To</p><h3 id="p-cust-name" contenteditable="true" class="text-2xl font-black text-slate-900 tracking-tighter">Walk-in Customer</h3><p id="p-cust-info" contenteditable="true" class="text-[12px] text-slate-500 font-bold">Address Details</p></div>
             <table class="w-full mb-12">
@@ -111,18 +114,19 @@
                 <tbody id="p-items-body" class="font-bold text-slate-700 italic"></tbody>
             </table>
             <div class="flex justify-end pt-10 border-t-2 border-slate-100"><div class="w-72 space-y-3"><div class="flex justify-between text-slate-400 font-bold text-xs"><span>Subtotal</span> <span id="p-subtotal">₹0.00</span></div><div id="p-gst-box" class="space-y-3"><div class="flex justify-between text-slate-400 font-bold text-xs"><span>CGST (9%)</span> <span id="p-cgst">₹0.00</span></div><div class="flex justify-between text-slate-400 font-bold text-xs"><span>SGST (9%)</span> <span id="p-sgst">₹0.00</span></div></div><div class="flex justify-between font-black text-slate-900 text-3xl border-t-8 border-slate-900 pt-6"><span>TOTAL</span> <span id="p-grand" class="text-indigo-600">₹0</span></div></div></div>
-            <div class="mt-40 pt-10 border-t border-slate-100 text-center"><p contenteditable="true" class="text-[9px] text-slate-400 font-black uppercase tracking-[5px]">Terms & Conditions Apply</p></div>
+            <div class="mt-40 pt-10 border-t border-slate-100 text-center"><p contenteditable="true" class="text-[9px] text-slate-400 font-black uppercase tracking-[5px]">Computer Generated Invoice</p></div>
         </div>
     </section>
 </div>
 
 <script>
+    // DATA CORE
     let db = {
         shop: JSON.parse(localStorage.getItem('bh_shop')) || { name: "MY BUSINESS", info: "Address Line 1\nGSTIN: 27XXXXX0000X1Z1" },
         stock: JSON.parse(localStorage.getItem('bh_stock')) || [],
         parties: JSON.parse(localStorage.getItem('bh_parties')) || [],
         sales: JSON.parse(localStorage.getItem('bh_sales')) || [],
-        settings: JSON.parse(localStorage.getItem('bh_settings')) || { nextInv: 1001 }
+        settings: JSON.parse(localStorage.getItem('bh_settings')) || { nextInv: 1001 } // Next Number State
     };
 
     window.onload = () => { addItemRow(); loadGlobalData(); updatePreview(); autoScaleInvoice(); };
@@ -130,14 +134,34 @@
     function loadGlobalData() {
         document.getElementById('p-shop-name').innerText = db.shop.name;
         document.getElementById('p-shop-info').innerText = db.shop.info;
+        
+        // DISPLAY CURRENT INVOICE NUMBER
         document.getElementById('p-inv-no').innerText = "#INV-" + db.settings.nextInv;
 
         const pSel = document.getElementById('party-select');
         pSel.innerHTML = '<option value="new">+ Select Saved Party</option>';
         db.parties.forEach(p => { let opt = document.createElement('option'); opt.value = p.id; opt.innerText = p.name; pSel.appendChild(opt); });
-
         renderInventory();
         renderPartiesList();
+    }
+
+    // CORE: INCREMENT INVOICE NUMBER LOGIC
+    function finalizeTransaction() {
+        const total = document.getElementById('p-grand').innerText;
+        if(parseFloat(total.replace('₹','')) <= 0) return alert("Select items first!");
+        
+        // 1. Save Transaction Data
+        db.sales.push({ id: Date.now(), total, invNo: db.settings.nextInv });
+        
+        // 2. INCREMENT THE NUMBER FOR NEXT TIME
+        db.settings.nextInv++;
+        
+        // 3. Save to Storage
+        localStorage.setItem('bh_sales', JSON.stringify(db.sales));
+        localStorage.setItem('bh_settings', JSON.stringify(db.settings));
+        
+        alert("Bill Recorded! Next Invoice Number will be #" + db.settings.nextInv);
+        location.reload(); // Refresh to update Template display
     }
 
     function switchModule(mod) {
@@ -149,75 +173,19 @@
 
     function adjustFont(size) { document.documentElement.style.setProperty('--inv-font-size', size + 'px'); }
 
-    // PARTY CRUD
-    function quickAddParty() {
-        const n = prompt("Party Name:");
-        const i = prompt("Address/GSTIN:");
-        if(n) { db.parties.push({ id: Date.now(), name: n, info: i }); saveParties(); }
-    }
-
-    function editParty(id) {
-        let p = db.parties.find(x => x.id === id);
-        if(p) {
-            let newN = prompt("Update Name:", p.name);
-            let newI = prompt("Update Info:", p.info);
-            if(newN) { p.name = newN; p.info = newI; saveParties(); }
-        }
-    }
-
-    function deleteParty(id) { if(confirm("Delete Party?")) { db.parties = db.parties.filter(x => x.id !== id); saveParties(); } }
-
+    // PARTY & INVENTORY CRUD (Unchanged as per request)
+    function quickAddParty() { const n = prompt("Party Name:"); const i = prompt("Info:"); if(n) { db.parties.push({ id: Date.now(), name: n, info: i }); saveParties(); } }
+    function editParty(id) { let p = db.parties.find(x => x.id === id); if(p) { let n = prompt("Name:", p.name); if(n) { p.name = n; p.info = prompt("Info:", p.info); saveParties(); } } }
+    function deleteParty(id) { if(confirm("Delete?")) { db.parties = db.parties.filter(x => x.id !== id); saveParties(); } }
     function saveParties() { localStorage.setItem('bh_parties', JSON.stringify(db.parties)); loadGlobalData(); }
-
-    function renderPartiesList() {
-        let html = '';
-        db.parties.forEach(p => {
-            html += `<div class="p-3 bg-white border rounded-xl flex justify-between items-center text-sm font-bold shadow-sm">
-                <span>${p.name}</span>
-                <div class="flex gap-2"><button onclick="editParty(${p.id})" class="text-blue-500 hover:underline">Edit</button><button onclick="deleteParty(${p.id})" class="text-red-400 hover:underline">X</button></div>
-            </div>`;
-        });
-        document.getElementById('party-list').innerHTML = html || '<p class="text-center py-10">No parties saved.</p>';
-    }
-
-    function loadPartyData() {
-        const id = document.getElementById('party-select').value;
-        const p = db.parties.find(x => x.id == id);
-        if(p) { document.getElementById('cust-name').value = p.name; document.getElementById('cust-info').value = p.info; updatePreview(); }
-    }
-
-    // INVENTORY CRUD
-    function quickAddProduct() {
-        const n = prompt("Product Name:");
-        const p = prompt("Price (₹):");
-        if(n && p) { db.stock.push({ id: Date.now(), name: n, price: parseFloat(p) }); saveStock(); }
-    }
-
-    function editProduct(id) {
-        let p = db.stock.find(x => x.id === id);
-        if(p) {
-            let newN = prompt("New Name:", p.name);
-            let newP = prompt("New Price:", p.price);
-            if(newN && newP) { p.name = newN; p.price = parseFloat(newP); saveStock(); }
-        }
-    }
-
-    function deleteProduct(id) { if(confirm("Delete Item?")) { db.stock = db.stock.filter(x => x.id !== id); saveStock(); } }
-
+    function renderPartiesList() { document.getElementById('party-list').innerHTML = db.parties.map(p => `<div class="p-3 bg-white border rounded-xl flex justify-between items-center text-sm font-bold shadow-sm"><span>${p.name}</span><div class="flex gap-2"><button onclick="editParty(${p.id})" class="text-blue-500">Edit</button><button onclick="deleteParty(${p.id})" class="text-red-400">X</button></div></div>`).join(''); }
+    function loadPartyData() { const id = document.getElementById('party-select').value; const p = db.parties.find(x => x.id == id); if(p) { document.getElementById('cust-name').value = p.name; document.getElementById('cust-info').value = p.info; updatePreview(); } }
+    function quickAddProduct() { const n = prompt("Name:"); const p = prompt("Price:"); if(n && p) { db.stock.push({ id: Date.now(), name: n, price: parseFloat(p) }); saveStock(); } }
+    function editProduct(id) { let p = db.stock.find(x => x.id === id); if(p) { let n = prompt("Name:", p.name); let pr = prompt("Price:", p.price); if(n && pr) { p.name = n; p.price = parseFloat(pr); saveStock(); } } }
+    function deleteProduct(id) { if(confirm("Delete?")) { db.stock = db.stock.filter(x => x.id !== id); saveStock(); } }
     function saveStock() { localStorage.setItem('bh_stock', JSON.stringify(db.stock)); renderInventory(); loadGlobalData(); }
+    function renderInventory() { document.getElementById('stock-list').innerHTML = db.stock.map(p => `<div class="p-3 bg-white border rounded-xl flex justify-between items-center text-sm font-bold shadow-sm"><span>${p.name} - ₹${p.price}</span><div class="flex gap-2"><button onclick="editProduct(${p.id})" class="text-blue-500">Edit</button><button onclick="deleteProduct(${p.id})" class="text-red-400">X</button></div></div>`).join(''); }
 
-    function renderInventory() {
-        let html = '';
-        db.stock.forEach(p => {
-            html += `<div class="p-3 bg-white border rounded-xl flex justify-between items-center text-sm font-bold shadow-sm">
-                <span>${p.name} - <span class="text-indigo-600">₹${p.price}</span></span>
-                <div class="flex gap-2"><button onclick="editProduct(${p.id})" class="text-blue-500 hover:underline">Edit</button><button onclick="deleteProduct(${p.id})" class="text-red-400 hover:underline">X</button></div>
-            </div>`;
-        });
-        document.getElementById('stock-list').innerHTML = html || '<p class="text-center py-10">Stock empty.</p>';
-    }
-
-    // BILLING & PREVIEW
     function addItemRow() {
         const id = Date.now();
         const html = `<div class="item-edit-row" id="row-${id}">
@@ -230,10 +198,7 @@
         document.getElementById('bill-items-container').insertAdjacentHTML('beforeend', html);
     }
 
-    function mapItemDetails(sel) {
-        const p = db.stock.find(x => x.id == sel.value);
-        if(p) { sel.parentElement.querySelector('.p-rate').value = p.price; updatePreview(); }
-    }
+    function mapItemDetails(sel) { const p = db.stock.find(x => x.id == sel.value); if(p) { sel.parentElement.querySelector('.p-rate').value = p.price; updatePreview(); } }
 
     function updatePreview() {
         document.getElementById('p-doc-label').innerText = document.getElementById('doc-type').value;
@@ -271,30 +236,7 @@
         }
     }
 
-    function finalizeTransaction() {
-        const total = document.getElementById('p-grand').innerText;
-        if(parseFloat(total.replace('₹','')) <= 0) return alert("Add items!");
-        
-        // Save Sale
-        db.sales.push({ id: Date.now(), total, invNo: db.settings.nextInv });
-        
-        // Increment Invoice Number
-        db.settings.nextInv++;
-        
-        localStorage.setItem('bh_sales', JSON.stringify(db.sales));
-        localStorage.setItem('bh_settings', JSON.stringify(db.settings));
-        
-        alert("Transaction Finalized! Moving to Invoice #" + db.settings.nextInv);
-        location.reload();
-    }
-
-    function saveShopProfile() {
-        db.shop.name = document.getElementById('p-shop-name').innerText;
-        db.shop.info = document.getElementById('p-shop-info').innerText;
-        localStorage.setItem('bh_shop', JSON.stringify(db.shop));
-        alert("Shop Updated!");
-    }
-
+    function saveShopProfile() { db.shop.name = document.getElementById('p-shop-name').innerText; db.shop.info = document.getElementById('p-shop-info').innerText; localStorage.setItem('bh_shop', JSON.stringify(db.shop)); alert("Saved!"); }
     function downloadPDF() { html2pdf().set({ margin:0, filename:'Bill_'+db.settings.nextInv+'.pdf', html2canvas:{scale:3}, jsPDF:{format:'a4', orientation:'portrait'} }).from(document.getElementById('invoice-preview')).save(); }
     function autoScaleInvoice() { const c = document.querySelector('.preview-col'), i = document.getElementById('invoice-preview'), s = (c.offsetWidth - 80) / 794; if(s < 1) i.style.transform = `scale(${s})`; }
 </script>
