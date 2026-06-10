@@ -12,7 +12,6 @@
         :root { --inv-font-size: 13px; --primary-color: #4f46e5; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; height: 100vh; overflow: hidden; margin: 0; }
         
-        /* LAYOUT LOGIC */
         .app-grid { display: flex; height: 100vh; width: 100%; flex-direction: column; }
         @media (min-width: 1024px) {
             .app-grid { display: grid; grid-template-columns: 240px 42% 1fr; flex-direction: row; }
@@ -20,18 +19,15 @@
             .sidebar { display: flex !important; }
         }
 
-        /* Sidebar & Nav */
         .sidebar { background: #0f172a; color: white; padding: 25px 15px; display: none; flex-direction: column; height: 100%; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #94a3b8; font-weight: 600; border-radius: 12px; transition: 0.2s; margin-bottom: 5px; width: 100%; text-align: left; }
         .nav-link.active { background: var(--primary-color); color: white; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4); }
 
-        /* Mobile Bottom Nav */
         .mobile-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2e8f0; z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
         .m-nav-item { text-align: center; color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .m-nav-item.active { color: var(--primary-color); }
         .m-nav-item i { font-size: 20px; display: block; margin-bottom: 3px; }
 
-        /* Content Areas */
         .form-col { flex: 1; background: #f8fafc; padding: 20px; overflow-y: auto; padding-bottom: 100px; }
         @media (min-width: 1024px) { .form-col { border-right: 1px solid #e2e8f0; padding: 25px; padding-bottom: 25px; } }
         
@@ -43,11 +39,9 @@
 
         #invoice-preview { background: white; width: 210mm; min-height: 297mm; padding: 15mm; transform-origin: top center; font-size: var(--inv-font-size); position: relative; }
 
-        /* UI Components */
         .card { background: white; border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; border: 1px solid #f1f5f9; }
         .input-box { width: 100%; background: #f1f5f9; padding: 12px; border-radius: 12px; border: 1px solid transparent; outline: none; font-size: 14px; font-weight: 600; }
         
-        /* Item Row Responsive Grid */
         .item-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 15px; position: relative; }
         .item-edit-row .p-id { grid-column: span 2; }
         .item-edit-row .p-desc { grid-column: span 2; }
@@ -56,34 +50,40 @@
             .item-edit-row .p-id, .item-edit-row .p-desc { grid-column: auto; }
         }
 
-        /* Float Action Button */
         .fab-preview { position: fixed; bottom: 85px; right: 20px; background: var(--primary-color); color: white; width: 60px; height: 60px; border-radius: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); z-index: 900; border: none; }
         @media (min-width: 1024px) { .fab-preview { display: none; } }
 
         @media print { .no-print { display: none !important; } .preview-col { position: static; visibility: visible; opacity: 1; padding: 0; background: white; } #invoice-preview { transform: scale(1) !important; margin: 0; box-shadow: none; } }
+        
+        /* Signature Styles */
+        .sig-container { display: flex; justify-content: space-between; margin-top: 30px; gap: 20px; }
+        .sig-box { text-align: center; border-top: 1px solid #eee; padding-top: 10px; width: 150px; }
+        .sig-img { max-height: 60px; max-width: 120px; margin: 0 auto 5px; }
     </style>
 </head>
 <body>
 
 <div class="app-grid">
-    <!-- 1. SIDEBAR (Desktop) -->
     <aside class="sidebar">
-        <div class="mb-10 px-2"><h1 class="text-2xl font-black italic text-indigo-400">BillingHub</h1><p class="text-[9px] uppercase font-bold text-slate-500 tracking-[3px]">Universal v13.0</p></div>
+        <div class="mb-10 px-2"><h1 class="text-2xl font-black italic text-indigo-400">BillingHub</h1><p class="text-[9px] uppercase font-bold text-slate-500 tracking-[3px]">Universal v14.0</p></div>
         <nav class="flex-1">
             <button onclick="switchModule('billing')" id="m-billing" class="nav-link active"><i class="fas fa-file-invoice"></i> Billing</button>
             <button onclick="switchModule('inventory')" id="m-inventory" class="nav-link"><i class="fas fa-boxes-stacked"></i> Inventory</button>
             <button onclick="switchModule('parties')" id="m-parties" class="nav-link"><i class="fas fa-users"></i> Parties</button>
         </nav>
-        <div class="pt-6 border-t border-slate-800 space-y-4 text-center">
+        <div class="pt-6 border-t border-slate-800 space-y-4">
+            <div class="flex items-center justify-between px-2">
+                <span class="text-[10px] font-bold text-slate-400">SIGNATURES</span>
+                <input type="checkbox" id="toggle-sigs" onchange="updatePreview()" checked>
+            </div>
             <input type="range" min="10" max="22" value="13" class="w-full h-1 bg-slate-700 accent-indigo-500" oninput="adjustFont(this.value)">
             <button onclick="saveShopProfile()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase">Update Shop Info</button>
         </div>
     </aside>
 
-    <!-- 2. MAIN FORM -->
     <main class="form-col no-print">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-slate-800 lg:text-2xl">Create Bill</h2>
+            <h2 class="text-xl font-black text-slate-800 lg:text-2xl">Create Document</h2>
             <div class="flex gap-2">
                 <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-lg"><i class="fas fa-download mr-1"></i> PDF</button>
                 <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-xs"><i class="fas fa-print mr-1"></i> Print</button>
@@ -92,14 +92,19 @@
 
         <div id="mod-billing">
             <div class="card grid grid-cols-2 gap-3 bg-indigo-50/50">
-                <select id="template-style" class="input-box col-span-2" onchange="updatePreview()">
-                    <option value="classic">Classic Style</option><option value="modern">Modern Style</option>
+                <select id="doc-type" class="input-box col-span-2" onchange="updatePreview()">
+                    <option value="INVOICE">Standard Invoice</option>
+                    <option value="TAX INVOICE">Tax Invoice (GST)</option>
+                    <option value="QUOTATION">Official Quotation</option>
+                    <option value="ESTIMATE">Estimate / Proforma</option>
                 </select>
-                <select id="doc-type" class="input-box" onchange="updatePreview()">
-                    <option value="TAX INVOICE">Tax Invoice</option><option value="QUOTATION">Quotation</option><option value="RETAIL BILL">Retail Bill</option>
+                <select id="template-style" class="input-box" onchange="updatePreview()">
+                    <option value="classic">Classic Minimal</option>
+                    <option value="modern">Modern Professional</option>
                 </select>
                 <select id="tax-mode" class="input-box" onchange="updatePreview()">
-                    <option value="GST">GST Mode</option><option value="NON-GST">Non-GST</option>
+                    <option value="GST">GST Mode (18%)</option>
+                    <option value="NON-GST">Non-GST</option>
                 </select>
             </div>
 
@@ -120,6 +125,21 @@
                 <button onclick="addItemRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600">+ Custom Row</button>
             </div>
 
+            <!-- Signature Inputs -->
+            <div class="card space-y-4">
+                <label class="text-[10px] font-black text-slate-400 uppercase block">Signature Settings</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <input type="text" id="auth-sig-name" placeholder="Authorized Signatory" class="input-box mb-2" oninput="updatePreview()">
+                        <input type="file" id="auth-sig-file" class="text-[10px]" onchange="handleSigUpload(this, 'auth')">
+                    </div>
+                    <div>
+                        <input type="text" id="party-sig-name" placeholder="Receiver Signature" class="input-box mb-2" oninput="updatePreview()">
+                        <input type="file" id="party-sig-file" class="text-[10px]" onchange="handleSigUpload(this, 'party')">
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">Terms & Conditions</label>
                 <textarea id="terms-input" class="input-box h-20 text-xs" placeholder="Terms here..." oninput="updatePreview()"></textarea>
@@ -129,16 +149,16 @@
         </div>
 
         <div id="mod-inventory" class="hidden">
-            <div class="flex justify-between items-center mb-6"><h3>Inventory</h3><button onclick="quickAddProduct()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New</button></div>
-            <div id="stock-list" class="space-y-2"></div>
+            <div class="flex justify-between items-center mb-6"><h3>Inventory Management</h3><button onclick="quickAddProduct()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Item</button></div>
+            <div id="stock-list" class="space-y-3"></div>
         </div>
+        
         <div id="mod-parties" class="hidden">
-            <div class="flex justify-between items-center mb-6"><h3>Parties</h3><button onclick="quickAddParty()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New</button></div>
+            <div class="flex justify-between items-center mb-6"><h3>Parties</h3><button onclick="quickAddParty()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Party</button></div>
             <div id="party-list" class="space-y-2"></div>
         </div>
     </main>
 
-    <!-- 3. PREVIEW MODAL (Mobile) / PANEL (Desktop) -->
     <section class="preview-col" id="preview-panel">
         <div class="lg:hidden w-full flex justify-between items-center mb-4 px-4">
             <h3 class="text-white font-bold">Invoice Preview</h3>
@@ -149,7 +169,6 @@
         </div>
     </section>
 
-    <!-- 4. BOTTOM NAV (Mobile Only) -->
     <nav class="mobile-nav no-print">
         <button onclick="switchModule('billing')" class="m-nav-item active" id="mn-billing"><i class="fas fa-plus-circle"></i>Bill</button>
         <button onclick="switchModule('inventory')" class="m-nav-item" id="mn-inventory"><i class="fas fa-boxes-stacked"></i>Stock</button>
@@ -162,11 +181,16 @@
 
 <script>
     let db = {
-        shop: JSON.parse(localStorage.getItem('bh_shop')) || { name: "MY BUSINESS", info: "Nagpur, MH\nGSTIN: 27CAFPS2851G1ZJ" },
+        shop: JSON.parse(localStorage.getItem('bh_shop')) || { name: "MY BUSINESS", info: "Address Line 1\nGSTIN: 27XXXXX0000X1ZJ" },
         stock: JSON.parse(localStorage.getItem('bh_stock')) || [],
         parties: JSON.parse(localStorage.getItem('bh_parties')) || [],
         sales: JSON.parse(localStorage.getItem('bh_sales')) || [],
-        settings: JSON.parse(localStorage.getItem('bh_settings')) || { nextInv: 1001, terms: "1. Goods once sold not taken back." }
+        settings: JSON.parse(localStorage.getItem('bh_settings')) || { 
+            nextInv: 1001, 
+            terms: "1. Goods once sold not taken back.\n2. Subject to local jurisdiction.",
+            authSig: "",
+            partySig: ""
+        }
     };
 
     window.onload = () => { addItemRow(); loadGlobalData(); updatePreview(); autoScaleInvoice(); };
@@ -190,6 +214,79 @@
         document.getElementById('mn-' + mod)?.classList.add('active');
     }
 
+    function handleSigUpload(input, type) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            if(type === 'auth') db.settings.authSig = reader.result;
+            else db.settings.partySig = reader.result;
+            localStorage.setItem('bh_settings', JSON.stringify(db.settings));
+            updatePreview();
+        };
+        if(file) reader.readAsDataURL(file);
+    }
+
+    // --- Inventory Fix (Edit/Update/Save) ---
+    function renderInventory() {
+        const container = document.getElementById('stock-list');
+        container.innerHTML = db.stock.map(p => `
+            <div class="card" id="stock-item-${p.id}">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-slate-700">${p.name}</span>
+                    <div class="space-x-2">
+                        <button onclick="editProduct(${p.id})" class="text-indigo-600 text-xs font-bold bg-indigo-50 px-3 py-1 rounded-md">Edit</button>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-400 text-xs font-bold">Delete</button>
+                    </div>
+                </div>
+                <div class="text-sm text-slate-500 font-semibold">Price: ₹${p.price}</div>
+            </div>
+        `).join('');
+    }
+
+    function editProduct(id) {
+        const p = db.stock.find(x => x.id == id);
+        const div = document.getElementById(`stock-item-${id}`);
+        div.innerHTML = `
+            <div class="space-y-2">
+                <input type="text" id="edit-name-${id}" value="${p.name}" class="input-box">
+                <input type="number" id="edit-price-${id}" value="${p.price}" class="input-box">
+                <div class="flex gap-2">
+                    <button onclick="saveProductEdit(${id})" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Save Changes</button>
+                    <button onclick="renderInventory()" class="bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function saveProductEdit(id) {
+        const newName = document.getElementById(`edit-name-${id}`).value;
+        const newPrice = document.getElementById(`edit-price-${id}`).value;
+        const idx = db.stock.findIndex(x => x.id == id);
+        db.stock[idx].name = newName;
+        db.stock[idx].price = parseFloat(newPrice);
+        localStorage.setItem('bh_stock', JSON.stringify(db.stock));
+        renderInventory();
+    }
+
+    function deleteProduct(id) {
+        if(confirm("Delete this product?")) {
+            db.stock = db.stock.filter(x => x.id != id);
+            localStorage.setItem('bh_stock', JSON.stringify(db.stock));
+            renderInventory();
+        }
+    }
+
+    function quickAddProduct() {
+        const n = prompt("Product Name:");
+        const p = prompt("Selling Price:");
+        if(n && p) {
+            db.stock.push({ id: Date.now(), name: n, price: parseFloat(p) });
+            localStorage.setItem('bh_stock', JSON.stringify(db.stock));
+            renderInventory();
+        }
+    }
+
+    // --- Billing Logic ---
     function searchProducts(query) {
         const res = document.getElementById('search-results');
         if (query.length < 1) { res.classList.add('hidden'); return; }
@@ -223,11 +320,15 @@
     }
 
     function updatePreview() {
+        const docType = document.getElementById('doc-type').value;
         const style = document.getElementById('template-style').value;
         const taxMode = document.getElementById('tax-mode').value;
         const custName = document.getElementById('cust-name').value || "Walk-in Customer";
         const custInfo = document.getElementById('cust-info').value || "Address Details";
         const terms = document.getElementById('terms-input').value.replace(/\n/g, '<br>');
+        const showSig = document.getElementById('toggle-sigs').checked;
+        const authName = document.getElementById('auth-sig-name').value || "Authorized Signatory";
+        const partyName = document.getElementById('party-sig-name').value || "Receiver Signature";
         
         let sub = 0, itemsHtml = '';
         document.querySelectorAll('.item-edit-row').forEach(row => {
@@ -237,61 +338,138 @@
                 const q = parseInt(row.querySelector('.p-qty').value) || 0;
                 const r = parseFloat(row.querySelector('.p-rate').value) || 0;
                 const t = q * r; sub += t;
-                itemsHtml += `<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><div style="font-weight:800;">${pObj.name}</div><div style="font-size:10px; color:#888;">${row.querySelector('.p-desc').value}</div></td><td style="text-align:center;">${q}</td><td style="text-align:right;">₹${r}</td><td style="text-align:right; font-weight:900;">₹${t}</td></tr>`;
+                itemsHtml += `<tr><td style="padding:10px 0; border-bottom:1px solid #eee;"><div style="font-weight:800;">${pObj.name}</div><div style="font-size:10px; color:#888;">${row.querySelector('.p-desc').value}</div></td><td style="text-align:center;">${q}</td><td style="text-align:right;">₹${r}</td><td style="text-align:right; font-weight:900;">₹${t}</td></tr>`;
             }
         });
 
         const tax = taxMode === 'GST' ? sub * 0.18 : 0;
-        const headCol = style === 'modern' ? '#4f46e5' : '#000';
+        const primary = style === 'modern' ? '#4f46e5' : '#111';
         
+        // Dynamic Title & Header colors based on Document Type
+        let titleColor = primary;
+        if(docType === 'QUOTATION') titleColor = '#e67e22';
+        if(docType === 'ESTIMATE') titleColor = '#7f8c8d';
+
         document.getElementById('template-render-target').innerHTML = `
-            <div style="display:flex; justify-content:space-between; border-bottom:8px solid ${headCol}; padding-bottom:15px; margin-bottom:20px;">
-                <div><h1 contenteditable="true" style="font-size:28px; font-weight:900; color:${headCol}; margin:0;">${db.shop.name}</h1><p contenteditable="true" style="font-size:11px; font-weight:700; color:#666;">${db.shop.info.replace(/\n/g,'<br>')}</p></div>
-                <div style="text-align:right;"><span style="background:${headCol}; color:#fff; padding:3px 8px; font-size:10px; font-weight:900;">${document.getElementById('doc-type').value}</span><p style="font-size:20px; font-weight:900; margin-top:5px;">#INV-${db.settings.nextInv}</p><p style="font-size:11px; color:#888;">${new Date().toLocaleDateString()}</p></div>
-            </div>
-            <div style="margin-bottom:20px;">
-                <p style="font-size:9px; font-weight:900; color:#aaa; text-transform:uppercase;">Billing To</p>
-                <h3 contenteditable="true" style="font-size:18px; font-weight:900; margin:0;">${custName}</h3><p contenteditable="true" style="font-size:11px; color:#666;">${custInfo.replace(/\n/g,'<br>')}</p>
-            </div>
-            <table style="width:100%; border-collapse:collapse;">
-                <thead><tr style="border-bottom:2px solid #eee; font-size:10px; text-transform:uppercase; color:#888;"><th style="text-align:left; padding:8px 0;">Description</th><th style="width:50px; text-align:center;">Qty</th><th style="width:80px; text-align:right;">Rate</th><th style="width:90px; text-align:right;">Amount</th></tr></thead>
-                <tbody>${itemsHtml || '<tr><td colspan="4" style="padding:30px; text-align:center; color:#ccc;">No items</td></tr>'}</tbody>
-            </table>
-            <div style="display:flex; justify-content:flex-end; margin-top:20px;">
-                <div style="width:220px;">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#666;"><span>Subtotal</span><span>₹${sub.toFixed(2)}</span></div>
-                    ${taxMode === 'GST' ? `<div style="display:flex; justify-content:space-between; font-size:11px; color:#666;"><span>GST (18%)</span><span>₹${tax.toFixed(2)}</span></div>` : ''}
-                    <div style="display:flex; justify-content:space-between; font-size:22px; font-weight:900; border-top:3px solid ${headCol}; padding-top:5px; margin-top:5px; color:${headCol};"><span>TOTAL</span><span>₹${Math.round(sub+tax).toLocaleString()}</span></div>
+            <div style="display:flex; justify-content:space-between; border-bottom:8px solid ${titleColor}; padding-bottom:15px; margin-bottom:20px;">
+                <div>
+                    <h1 contenteditable="true" style="font-size:28px; font-weight:900; color:${titleColor}; margin:0;">${db.shop.name}</h1>
+                    <p contenteditable="true" style="font-size:11px; font-weight:700; color:#666;">${db.shop.info.replace(/\n/g,'<br>')}</p>
+                </div>
+                <div style="text-align:right;">
+                    <span style="background:${titleColor}; color:#fff; padding:4px 12px; font-size:12px; font-weight:900; border-radius:4px;">${docType}</span>
+                    <p style="font-size:20px; font-weight:900; margin-top:8px;">#${docType.substring(0,3)}-${db.settings.nextInv}</p>
+                    <p style="font-size:11px; color:#888;">Date: ${new Date().toLocaleDateString()}</p>
                 </div>
             </div>
-            <div style="margin-top:40px; border-top:1px solid #eee; padding-top:10px;"><p style="font-size:9px; font-weight:900; color:#aaa; text-transform:uppercase;">Terms & Conditions</p><p style="font-size:10px; color:#666;">${terms}</p></div>
+
+            <div style="margin-bottom:25px; display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div>
+                    <p style="font-size:9px; font-weight:900; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Customer Details</p>
+                    <h3 contenteditable="true" style="font-size:16px; font-weight:900; margin:0;">${custName}</h3>
+                    <p contenteditable="true" style="font-size:11px; color:#666;">${custInfo.replace(/\n/g,'<br>')}</p>
+                </div>
+                ${taxMode === 'GST' ? `<div style="text-align:right;"><p style="font-size:9px; font-weight:900; color:#aaa; text-transform:uppercase;">Compliance</p><p style="font-size:11px; font-weight:bold;">Inter-State Tax Invoice</p><p style="font-size:10px; color:#888;">Place of Supply: State (Code)</p></div>` : ''}
+            </div>
+
+            <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                <thead>
+                    <tr style="border-bottom:2px solid ${titleColor}; font-size:10px; text-transform:uppercase; color:${titleColor};">
+                        <th style="text-align:left; padding:10px 0;">Item Description</th>
+                        <th style="width:50px; text-align:center;">Qty</th>
+                        <th style="width:80px; text-align:right;">Rate</th>
+                        <th style="width:90px; text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>${itemsHtml || '<tr><td colspan="4" style="padding:40px; text-align:center; color:#ccc; font-weight:bold;">No items added to document</td></tr>'}</tbody>
+            </table>
+
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <div style="width:60%;">
+                    <p style="font-size:9px; font-weight:900; color:#aaa; text-transform:uppercase; margin-bottom:5px;">Terms & Conditions</p>
+                    <p style="font-size:10px; color:#666; line-height:1.4;">${terms}</p>
+                </div>
+                <div style="width:35%;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; padding:5px 0;"><span>Subtotal</span><span>₹${sub.toFixed(2)}</span></div>
+                    ${taxMode === 'GST' ? `<div style="display:flex; justify-content:space-between; font-size:12px; padding:5px 0;"><span>GST (18%)</span><span>₹${tax.toFixed(2)}</span></div>` : ''}
+                    <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:900; border-top:3px solid ${titleColor}; padding-top:10px; margin-top:10px; color:${titleColor};">
+                        <span>TOTAL</span><span>₹${Math.round(sub+tax).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+
+            ${showSig ? `
+            <div class="sig-container">
+                <div class="sig-box">
+                    ${db.settings.partySig ? `<img src="${db.settings.partySig}" class="sig-img">` : '<div style="height:40px;"></div>'}
+                    <p style="font-size:10px; font-weight:bold; margin:0;">${partyName}</p>
+                    <p style="font-size:8px; color:#aaa;">Receiver Signature</p>
+                </div>
+                <div class="sig-box">
+                    ${db.settings.authSig ? `<img src="${db.settings.authSig}" class="sig-img">` : '<div style="height:40px;"></div>'}
+                    <p style="font-size:10px; font-weight:bold; margin:0;">${authName}</p>
+                    <p style="font-size:8px; color:#aaa;">Authorized Signatory</p>
+                </div>
+            </div>` : ''}
         `;
     }
 
     function autoScaleInvoice() {
         const c = document.getElementById('preview-panel'), i = document.getElementById('invoice-preview');
+        if(!c || !i) return;
         const s = (c.offsetWidth - (window.innerWidth < 1024 ? 20 : 60)) / 794;
-        if(s < 1) i.style.transform = `scale(${s})`; else i.style.transform = `scale(1)`;
+        i.style.transform = (s < 1) ? `scale(${s})` : `scale(1)`;
     }
 
     function finalizeTransaction() {
-        const grand = document.getElementById('template-render-target').querySelector('span:last-child').innerText;
-        if(parseFloat(grand.replace('₹','').replace(',','')) <= 0) return alert("Empty bill!");
-        db.sales.push({ id:Date.now(), total:grand, invNo:db.settings.nextInv });
+        const val = document.getElementById('template-render-target').querySelector('span:last-child').innerText;
+        if(parseFloat(val.replace('₹','').replace(',','')) <= 0) return alert("Please add at least one item.");
+        db.sales.push({ id:Date.now(), total:val, invNo:db.settings.nextInv, type: document.getElementById('doc-type').value });
         db.settings.nextInv++;
         localStorage.setItem('bh_sales', JSON.stringify(db.sales));
         localStorage.setItem('bh_settings', JSON.stringify(db.settings));
-        alert("Success! Bill #"+(db.settings.nextInv-1)+" saved."); location.reload();
+        alert("Transaction finalized successfully.");
+        location.reload();
     }
 
-    function downloadPDF() { html2pdf().set({ margin:0, filename:'Bill.pdf', html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(document.getElementById('invoice-preview')).save(); }
+    function downloadPDF() { 
+        const element = document.getElementById('invoice-preview');
+        const opt = { margin: 0, filename: `Document_${db.settings.nextInv}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+        html2pdf().set(opt).from(element).save(); 
+    }
+
     function adjustFont(v) { document.documentElement.style.setProperty('--inv-font-size', v + 'px'); }
-    function quickAddProduct() { const n=prompt("Name:"), p=prompt("Price:"); if(n&&p) { db.stock.push({id:Date.now(),name:n,price:parseFloat(p)}); localStorage.setItem('bh_stock', JSON.stringify(db.stock)); renderInventory(); } }
-    function quickAddParty() { const n=prompt("Name:"), i=prompt("Info:"); if(n) { db.parties.push({id:Date.now(),name:n,info:i}); localStorage.setItem('bh_parties', JSON.stringify(db.parties)); loadGlobalData(); } }
-    function renderInventory() { document.getElementById('stock-list').innerHTML = db.stock.map(p => `<div class="card flex justify-between items-center text-sm font-bold"><span>${p.name} - ₹${p.price}</span><button onclick="db.stock=db.stock.filter(x=>x.id!=${p.id}); localStorage.setItem('bh_stock',JSON.stringify(db.stock)); renderInventory()" class="text-red-400">X</button></div>`).join(''); }
-    function renderPartiesList() { document.getElementById('party-list').innerHTML = db.parties.map(p => `<div class="card flex justify-between items-center text-sm font-bold"><span>${p.name}</span><button onclick="db.parties=db.parties.filter(x=>x.id!=${p.id}); localStorage.setItem('bh_parties',JSON.stringify(db.parties)); loadGlobalData()" class="text-red-400">X</button></div>`).join(''); }
-    function loadPartyData() { const p = db.parties.find(x => x.id == document.getElementById('party-select').value); if(p) { document.getElementById('cust-name').value = p.name; document.getElementById('cust-info').value = p.info; updatePreview(); } }
-    function saveShopProfile() { db.shop.name = document.getElementById('template-render-target').querySelector('h1').innerText; db.shop.info = document.getElementById('template-render-target').querySelector('p').innerText; localStorage.setItem('bh_shop', JSON.stringify(db.shop)); alert("Saved!"); }
+
+    function quickAddParty() { 
+        const n=prompt("Party Name:"), i=prompt("Address/Contact:"); 
+        if(n) { db.parties.push({id:Date.now(),name:n,info:i}); localStorage.setItem('bh_parties', JSON.stringify(db.parties)); loadGlobalData(); } 
+    }
+
+    function renderPartiesList() { 
+        document.getElementById('party-list').innerHTML = db.parties.map(p => `
+            <div class="card flex justify-between items-center text-sm font-bold">
+                <span>${p.name}</span>
+                <button onclick="deleteParty(${p.id})" class="text-red-400">Delete</button>
+            </div>`).join(''); 
+    }
+
+    function deleteParty(id) {
+        db.parties = db.parties.filter(x => x.id != id);
+        localStorage.setItem('bh_parties', JSON.stringify(db.parties));
+        loadGlobalData();
+    }
+
+    function loadPartyData() { 
+        const p = db.parties.find(x => x.id == document.getElementById('party-select').value); 
+        if(p) { document.getElementById('cust-name').value = p.name; document.getElementById('cust-info').value = p.info; updatePreview(); } 
+    }
+
+    function saveShopProfile() { 
+        db.shop.name = document.getElementById('template-render-target').querySelector('h1').innerText; 
+        db.shop.info = document.getElementById('template-render-target').querySelector('p').innerText; 
+        localStorage.setItem('bh_shop', JSON.stringify(db.shop)); 
+        alert("Shop Profile Updated!"); 
+    }
 </script>
 </body>
 </html>
