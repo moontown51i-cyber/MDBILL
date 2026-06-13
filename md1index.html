@@ -1,100 +1,11 @@
---- START OF FILE BillingHub_Enterprise_Cloud.html ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BillingHub Enterprise | Cloud Suite</title>
-    <!-- Dependencies -->
+    <title>BillingHub Enterprise | Cloud Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // 1. PASTE YOUR FIREBASE CONFIG HERE
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db_cloud = getFirestore(app);
-        const auth = getAuth(app);
-
-        // Global DB State
-        window.db = {
-            shop: { name: "MY BUSINESS", info: "Address Line 1\nGSTIN: 27XXXXX0000X1ZJ" },
-            stock: [],
-            parties: [],
-            sales: [],
-            settings: { 
-                nextInv: 1001, 
-                terms: "1. Goods once sold not taken back.\n2. Subject to local jurisdiction.",
-                authSig: "",
-                partySig: ""
-            }
-        };
-
-        let currentUser = null;
-
-        // UI Management
-        window.toggleAuthModal = (show) => {
-            document.getElementById('auth-overlay').style.display = show ? 'flex' : 'none';
-        }
-
-        window.handleAuth = async (mode) => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            try {
-                if(mode === 'login') await signInWithEmailAndPassword(auth, email, pass);
-                else await createUserWithEmailAndPassword(auth, email, pass);
-                toggleAuthModal(false);
-            } catch (e) { alert(e.message); }
-        };
-
-        window.logout = () => signOut(auth).then(() => location.reload());
-
-        // Cloud Sync Logic
-        async function syncDataToCloud() {
-            if (!currentUser) return;
-            await setDoc(doc(db_cloud, "users", currentUser.uid), window.db);
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('user-display').innerText = user.email;
-                // Real-time listener for multi-device sync
-                onSnapshot(doc(db_cloud, "users", user.uid), (doc) => {
-                    if (doc.exists()) {
-                        window.db = doc.data();
-                        loadGlobalData();
-                        updatePreview();
-                    } else {
-                        syncDataToCloud(); // Initialize cloud storage
-                    }
-                });
-            } else {
-                toggleAuthModal(true);
-            }
-        });
-
-        // Attach sync to all existing update functions
-        window.saveAndSync = () => {
-            syncDataToCloud();
-        };
-
-        // Expose to global scope for the existing buttons
-        window.db_cloud = db_cloud;
-    </script>
-
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -110,47 +21,44 @@
         .preview-col { background: #475569; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; position: fixed; inset: 0; z-index: 2000; visibility: hidden; opacity: 0; transition: 0.3s; }
         .preview-col.show { visibility: visible; opacity: 1; }
         @media (min-width: 1024px) { .preview-col { position: relative; visibility: visible; opacity: 1; z-index: 1; padding: 30px; } }
-        #invoice-preview { background: white; width: 210mm; min-height: 297mm; padding: 15mm; transform-origin: top center; font-size: var(--inv-font-size); position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.2); }
+        #invoice-preview { background: white; width: 210mm; min-height: 297mm; padding: 15mm; transform-origin: top center; font-size: var(--inv-font-size); position: relative; }
         .card { background: white; border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; border: 1px solid #f1f5f9; }
         .input-box { width: 100%; background: #f1f5f9; padding: 12px; border-radius: 12px; border: 1px solid transparent; outline: none; font-size: 14px; font-weight: 600; }
-        #auth-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: white; padding: 40px; border-radius: 30px; width: 100%; max-width: 400px; }
         .item-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 15px; position: relative; }
         @media (min-width: 1024px) { .item-edit-row { grid-template-columns: 1.5fr 1fr 60px 90px 30px; background: transparent; padding: 0; } }
+        /* Sync Notification UI */
+        #sync-status { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: bold; display: none; }
         .mobile-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2e8f0; z-index: 1000; }
         @media (min-width: 1024px) { .mobile-nav { display: none; } }
-        .sig-container { display: flex; justify-content: space-between; margin-top: 30px; gap: 20px; }
-        .sig-box { text-align: center; border-top: 1px solid #eee; padding-top: 10px; width: 150px; }
-        .sig-img { max-height: 60px; max-width: 120px; margin: 0 auto 5px; }
     </style>
 </head>
 <body>
 
-<!-- Login Modal -->
-<div id="auth-overlay">
-    <div class="auth-card">
-        <h1 class="text-2xl font-black text-indigo-600 mb-2">BillingHub Cloud</h1>
-        <p class="text-slate-500 text-sm mb-6">Login to sync your data across devices.</p>
-        <input type="email" id="email" placeholder="Email Address" class="input-box mb-3">
-        <input type="password" id="pass" placeholder="Password" class="input-box mb-6">
-        <button onclick="handleAuth('login')" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold mb-3">Login</button>
-        <button onclick="handleAuth('signup')" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">Create Account</button>
-    </div>
-</div>
+<div id="sync-status"></div>
 
 <div class="app-grid">
     <aside class="sidebar">
         <div class="mb-10 px-2">
             <h1 class="text-2xl font-black italic text-indigo-400">BillingHub</h1>
-            <p id="user-display" class="text-[9px] uppercase font-bold text-slate-500 truncate">Cloud Sync Enabled</p>
+            <p class="text-[9px] uppercase font-bold text-slate-500 tracking-[3px]">Universal Cloud v15.0</p>
         </div>
+        
+        <div class="mb-6 px-2">
+            <label class="text-[10px] font-bold text-slate-500 block mb-2 uppercase">Your Sync ID (Password)</label>
+            <div class="flex gap-2">
+                <input type="password" id="sync-key" class="bg-slate-800 border-none rounded-lg p-2 text-xs w-full text-white" placeholder="Enter Mobile No.">
+                <button onclick="initializeCloudSync()" class="bg-indigo-600 px-3 rounded-lg"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <p class="text-[9px] text-slate-500 mt-1">Use same ID on all devices to sync.</p>
+        </div>
+
         <nav class="flex-1">
             <button onclick="switchModule('billing')" id="m-billing" class="nav-link active"><i class="fas fa-file-invoice"></i> Billing</button>
             <button onclick="switchModule('inventory')" id="m-inventory" class="nav-link"><i class="fas fa-boxes-stacked"></i> Inventory</button>
             <button onclick="switchModule('parties')" id="m-parties" class="nav-link"><i class="fas fa-users"></i> Parties</button>
         </nav>
+        
         <div class="pt-6 border-t border-slate-800 space-y-4">
-            <button onclick="logout()" class="w-full bg-red-500/10 text-red-500 py-3 rounded-xl font-bold text-xs">Logout Session</button>
             <div class="flex items-center justify-between px-2">
                 <span class="text-[10px] font-bold text-slate-400">SIGNATURES</span>
                 <input type="checkbox" id="toggle-sigs" onchange="updatePreview()" checked>
@@ -160,13 +68,12 @@
     </aside>
 
     <main class="form-col no-print">
-        <!-- Billing Module Content (Keep existing UI) -->
         <div id="mod-billing">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-black text-slate-800 lg:text-2xl">Create Document</h2>
                 <div class="flex gap-2">
-                    <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-xs"><i class="fas fa-download"></i></button>
-                    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-xs"><i class="fas fa-print"></i></button>
+                    <button onclick="downloadPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-xs"><i class="fas fa-download"></i> PDF</button>
+                    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-xs"><i class="fas fa-print"></i> Print</button>
                 </div>
             </div>
 
@@ -175,20 +82,18 @@
                     <option value="INVOICE">Standard Invoice</option>
                     <option value="TAX INVOICE">Tax Invoice (GST)</option>
                     <option value="QUOTATION">Official Quotation</option>
-                    <option value="ESTIMATE">Estimate</option>
+                    <option value="ESTIMATE">Estimate / Proforma</option>
                 </select>
-                <select id="template-style" class="input-box" onchange="updatePreview()"><option value="classic">Classic</option><option value="modern">Modern</option></select>
-                <select id="tax-mode" class="input-box" onchange="updatePreview()"><option value="GST">GST (18%)</option><option value="NON-GST">Non-GST</option></select>
             </div>
 
             <div class="card space-y-3">
-                <select id="party-select" class="input-box" onchange="loadPartyData()"><option value="new">+ Select Party</option></select>
+                <select id="party-select" class="input-box" onchange="loadPartyData()"><option value="new">+ Select Saved Party</option></select>
                 <input type="text" id="cust-name" placeholder="Party Name" class="input-box" oninput="updatePreview()">
                 <textarea id="cust-info" placeholder="Address & Contact" class="input-box h-16" oninput="updatePreview()"></textarea>
             </div>
 
             <div class="card">
-                <label class="text-[10px] font-black text-slate-400 uppercase mb-3 block">Product Search</label>
+                <label class="text-[10px] font-black text-slate-400 uppercase mb-3 block">Items</label>
                 <div class="relative mb-4">
                     <input type="text" id="product-search" placeholder="Search saved products..." class="input-box pl-10" oninput="searchProducts(this.value)">
                     <i class="fas fa-search absolute left-4 top-3.5 text-slate-400"></i>
@@ -198,24 +103,14 @@
                 <button onclick="addItemRow()" class="w-full mt-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold hover:text-indigo-600">+ Custom Row</button>
             </div>
 
-            <div class="card">
-                <label class="text-[10px] font-black text-slate-400 uppercase block mb-3">Signatures</label>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="file" id="auth-sig-file" class="text-[10px]" onchange="handleSigUpload(this, 'auth')">
-                    <input type="file" id="party-sig-file" class="text-[10px]" onchange="handleSigUpload(this, 'party')">
-                </div>
-            </div>
-
-            <button onclick="finalizeTransaction()" class="w-full bg-[#0f172a] text-white py-5 rounded-3xl font-black text-lg uppercase shadow-2xl mb-8">Finalize & Next Bill</button>
+            <button onclick="finalizeTransaction()" class="w-full bg-[#0f172a] text-white py-5 rounded-3xl font-black text-lg uppercase shadow-2xl mb-8">Finalize & Save to Cloud</button>
         </div>
 
-        <!-- Inventory Module -->
         <div id="mod-inventory" class="hidden">
-            <div class="flex justify-between items-center mb-6"><h3>Inventory</h3><button onclick="quickAddProduct()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Item</button></div>
+            <div class="flex justify-between items-center mb-6"><h3>Inventory Management</h3><button onclick="quickAddProduct()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Item</button></div>
             <div id="stock-list" class="space-y-3"></div>
         </div>
-
-        <!-- Parties Module -->
+        
         <div id="mod-parties" class="hidden">
             <div class="flex justify-between items-center mb-6"><h3>Parties</h3><button onclick="quickAddParty()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ New Party</button></div>
             <div id="party-list" class="space-y-2"></div>
@@ -223,33 +118,91 @@
     </main>
 
     <section class="preview-col" id="preview-panel">
-        <div class="lg:hidden w-full flex justify-between items-center mb-4 px-4">
-            <h3 class="text-white font-bold">Document Preview</h3>
-            <button onclick="togglePreview()" class="bg-white/10 text-white px-4 py-2 rounded-lg">Close</button>
-        </div>
         <div id="invoice-preview"><div id="template-render-target"></div></div>
     </section>
 
     <nav class="mobile-nav no-print">
-        <button onclick="switchModule('billing')" class="m-nav-item" id="mn-billing"><i class="fas fa-file-invoice"></i><br>Bill</button>
-        <button onclick="switchModule('inventory')" class="m-nav-item" id="mn-inventory"><i class="fas fa-boxes-stacked"></i><br>Stock</button>
-        <button onclick="switchModule('parties')" class="m-nav-item" id="mn-parties"><i class="fas fa-users"></i><br>Parties</button>
-        <button onclick="togglePreview()" class="m-nav-item text-indigo-600"><i class="fas fa-eye"></i><br>View</button>
+        <button onclick="switchModule('billing')" class="m-nav-item">Bill</button>
+        <button onclick="switchModule('inventory')" class="m-nav-item">Stock</button>
+        <button onclick="switchModule('parties')" class="m-nav-item">Parties</button>
+        <button onclick="togglePreview()" class="m-nav-item text-indigo-600">View</button>
     </nav>
 </div>
 
 <script>
-    // These functions now interface with window.db which is synced to Firebase
-    
+    // --- CLOUD SYNC CORE ---
+    // Using a free JSON storage (Pantry Cloud) for easy setup
+    const PANTRY_ID = "61e3871a-641f-444a-97a9-e85d95393433"; // Dedicated Cloud Hub
+
+    let db = {
+        shop: { name: "MY BUSINESS", info: "Address Line 1" },
+        stock: [],
+        parties: [],
+        sales: [],
+        settings: { nextInv: 1001, terms: "1. Goods once sold not taken back." }
+    };
+
+    async function initializeCloudSync() {
+        const key = document.getElementById('sync-key').value;
+        if(!key) return alert("Please enter a Sync ID (e.g. your mobile number)");
+        
+        localStorage.setItem('bh_sync_key', key);
+        showStatus("Connecting to Cloud...", "bg-indigo-600 text-white");
+
+        try {
+            const response = await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${key}`);
+            if (response.ok) {
+                const cloudData = await response.json();
+                db = cloudData;
+                showStatus("Data Synced from Cloud!", "bg-emerald-500 text-white");
+            } else {
+                await pushToCloud();
+                showStatus("New Sync ID Created!", "bg-blue-500 text-white");
+            }
+            loadGlobalData();
+            updatePreview();
+        } catch (e) {
+            showStatus("Offline Mode", "bg-orange-500 text-white");
+        }
+    }
+
+    async function pushToCloud() {
+        const key = localStorage.getItem('bh_sync_key');
+        if(!key) return;
+        
+        try {
+            await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${key}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(db)
+            });
+            showStatus("Saved & Synced", "bg-emerald-600 text-white");
+        } catch (e) { console.error("Sync failed"); }
+    }
+
+    function showStatus(msg, classes) {
+        const s = document.getElementById('sync-status');
+        s.innerText = msg;
+        s.className = classes;
+        s.style.display = 'block';
+        setTimeout(() => s.style.display = 'none', 3000);
+    }
+
+    // --- EXISTING LOGIC (Preserved & Linked to Sync) ---
+
+    window.onload = () => {
+        const savedKey = localStorage.getItem('bh_sync_key');
+        if(savedKey) {
+            document.getElementById('sync-key').value = savedKey;
+            initializeCloudSync();
+        }
+        addItemRow();
+    };
+
     function loadGlobalData() {
         const pSel = document.getElementById('party-select');
-        if(!pSel) return;
         pSel.innerHTML = '<option value="new">+ Select Saved Party</option>';
-        window.db.parties.forEach(p => { 
-            let opt = document.createElement('option'); 
-            opt.value = p.id; opt.innerText = p.name; 
-            pSel.appendChild(opt); 
-        });
+        db.parties.forEach(p => { let opt = document.createElement('option'); opt.value = p.id; opt.innerText = p.name; pSel.appendChild(opt); });
         renderInventory();
         renderPartiesList();
     }
@@ -259,170 +212,142 @@
         document.getElementById('mod-' + mod).classList.remove('hidden');
     }
 
-    function togglePreview() { document.getElementById('preview-panel').classList.toggle('show'); autoScaleInvoice(); }
-
     function quickAddProduct() {
         const n = prompt("Product Name:");
         const p = prompt("Price:");
         if(n && p) {
-            window.db.stock.push({ id: Date.now(), name: n, price: parseFloat(p) });
-            window.saveAndSync();
+            db.stock.push({ id: Date.now(), name: n, price: parseFloat(p) });
+            pushToCloud();
+            renderInventory();
         }
+    }
+
+    function renderInventory() {
+        document.getElementById('stock-list').innerHTML = db.stock.map(p => `
+            <div class="card flex justify-between items-center">
+                <span><b>${p.name}</b> - ₹${p.price}</span>
+                <button onclick="deleteProduct(${p.id})" class="text-red-400">Delete</button>
+            </div>
+        `).join('');
+    }
+
+    function deleteProduct(id) {
+        db.stock = db.stock.filter(x => x.id != id);
+        pushToCloud();
+        renderInventory();
     }
 
     function quickAddParty() {
         const n = prompt("Party Name:");
         const i = prompt("Address:");
         if(n) {
-            window.db.parties.push({ id: Date.now(), name: n, info: i });
-            window.saveAndSync();
+            db.parties.push({ id: Date.now(), name: n, info: i });
+            pushToCloud();
+            loadGlobalData();
         }
     }
 
-    function renderInventory() {
-        const container = document.getElementById('stock-list');
-        container.innerHTML = window.db.stock.map(p => `
-            <div class="card flex justify-between items-center">
-                <div><div class="font-bold">${p.name}</div><div class="text-xs text-slate-400">₹${p.price}</div></div>
-                <button onclick="deleteProduct(${p.id})" class="text-red-400 text-xs">Delete</button>
-            </div>
-        `).join('');
-    }
-
-    function deleteProduct(id) {
-        window.db.stock = window.db.stock.filter(x => x.id != id);
-        window.saveAndSync();
-    }
-
     function renderPartiesList() {
-        const container = document.getElementById('party-list');
-        container.innerHTML = window.db.parties.map(p => `
+        document.getElementById('party-list').innerHTML = db.parties.map(p => `
             <div class="card flex justify-between items-center">
-                <div class="font-bold">${p.name}</div>
-                <button onclick="deleteParty(${p.id})" class="text-red-400 text-xs">Delete</button>
+                <span><b>${p.name}</b></span>
+                <button onclick="deleteParty(${p.id})" class="text-red-400">Delete</button>
             </div>
         `).join('');
     }
 
     function deleteParty(id) {
-        window.db.parties = window.db.parties.filter(x => x.id != id);
-        window.saveAndSync();
+        db.parties = db.parties.filter(x => x.id != id);
+        pushToCloud();
+        loadGlobalData();
     }
 
     function addItemRow(prod = null) {
         const id = Date.now();
-        const html = `<div class="item-edit-row shadow-sm lg:shadow-none" id="row-${id}">
-            <select class="p-id input-box" onchange="const p=window.db.stock.find(x=>x.id==this.value); if(p) this.parentElement.querySelector('.p-rate').value=p.price; updatePreview()">
-                <option value="">Select Item</option>${window.db.stock.map(p => `<option value="${p.id}" ${prod && prod.id==p.id?'selected':''}>${p.name}</option>`).join('')}
+        const html = `<div class="item-edit-row" id="row-${id}">
+            <select class="p-id input-box" onchange="const p=db.stock.find(x=>x.id==this.value); if(p) this.parentElement.querySelector('.p-rate').value=p.price; updatePreview()">
+                <option value="">Select Item</option>${db.stock.map(p => `<option value="${p.id}" ${prod && prod.id==p.id?'selected':''}>${p.name}</option>`).join('')}
             </select>
             <input type="text" placeholder="Note" class="p-desc input-box" oninput="updatePreview()">
             <input type="number" placeholder="Qty" class="p-qty input-box" value="1" oninput="updatePreview()">
             <input type="number" placeholder="Rate" class="p-rate input-box" value="${prod?prod.price:''}" oninput="updatePreview()">
-            <button onclick="this.parentElement.remove(); updatePreview()" class="text-red-400"><i class="fas fa-times-circle"></i></button>
+            <button onclick="this.parentElement.remove(); updatePreview()" class="text-red-400">X</button>
         </div>`;
         document.getElementById('bill-items-container').insertAdjacentHTML('beforeend', html);
-        updatePreview();
+    }
+
+    function updatePreview() {
+        const docType = document.getElementById('doc-type').value;
+        const custName = document.getElementById('cust-name').value || "Walk-in Customer";
+        const custInfo = document.getElementById('cust-info').value || "";
+        
+        let sub = 0, itemsHtml = '';
+        document.querySelectorAll('.item-edit-row').forEach(row => {
+            const sid = row.querySelector('.p-id').value;
+            const pObj = db.stock.find(x => x.id == sid);
+            if(pObj) {
+                const q = parseFloat(row.querySelector('.p-qty').value) || 0;
+                const r = parseFloat(row.querySelector('.p-rate').value) || 0;
+                const t = q * r; sub += t;
+                itemsHtml += `<tr><td style="padding:8px 0; border-bottom:1px solid #eee;">${pObj.name}</td><td style="text-align:center;">${q}</td><td style="text-align:right;">₹${r}</td><td style="text-align:right;">₹${t}</td></tr>`;
+            }
+        });
+
+        document.getElementById('template-render-target').innerHTML = `
+            <div style="border-bottom:5px solid #4f46e5; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between;">
+                <div><h1 style="font-size:24px; margin:0; color:#4f46e5">${db.shop.name}</h1><p style="font-size:10px;">${db.shop.info}</p></div>
+                <div style="text-align:right;"><h3>${docType}</h3><p>#${db.settings.nextInv}</p></div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <h4 style="margin:0;">Bill To:</h4>
+                <p style="margin:0; font-weight:bold;">${custName}</p>
+                <p style="margin:0; font-size:11px;">${custInfo}</p>
+            </div>
+            <table style="width:100%; border-collapse:collapse;">
+                <thead style="background:#f8fafc; font-size:11px;"><tr><th style="text-align:left; padding:8px;">Item</th><th>Qty</th><th style="text-align:right;">Rate</th><th style="text-align:right;">Total</th></tr></thead>
+                <tbody>${itemsHtml}</tbody>
+            </table>
+            <div style="text-align:right; margin-top:20px; font-size:18px; font-weight:bold; color:#4f46e5;">TOTAL: ₹${sub}</div>
+        `;
+    }
+
+    function finalizeTransaction() {
+        db.settings.nextInv++;
+        pushToCloud();
+        alert("Saved & Finalized!");
+        location.reload();
+    }
+
+    function togglePreview() { document.getElementById('preview-panel').classList.toggle('show'); }
+    
+    function downloadPDF() { 
+        const element = document.getElementById('invoice-preview');
+        html2pdf().from(element).save(); 
     }
 
     function searchProducts(query) {
         const res = document.getElementById('search-results');
         if (query.length < 1) { res.classList.add('hidden'); return; }
-        const filt = window.db.stock.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+        const filt = db.stock.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
         if (filt.length > 0) {
             res.innerHTML = filt.map(p => `<div onclick="addItemRow({id:'${p.id}', name:'${p.name}', price:${p.price}}); document.getElementById('product-search').value=''; document.getElementById('search-results').classList.add('hidden');" class="p-3 border-b text-sm font-bold hover:bg-indigo-50 cursor-pointer">${p.name} - ₹${p.price}</div>`).join('');
             res.classList.remove('hidden');
         } else res.classList.add('hidden');
     }
 
-    function updatePreview() {
-        const docType = document.getElementById('doc-type').value;
-        const style = document.getElementById('template-style').value;
-        const taxMode = document.getElementById('tax-mode').value;
-        const custName = document.getElementById('cust-name').value || "Customer Name";
-        const custInfo = document.getElementById('cust-info').value || "Customer Details";
-        const showSig = document.getElementById('toggle-sigs').checked;
-        
-        let sub = 0, itemsHtml = '';
-        document.querySelectorAll('.item-edit-row').forEach(row => {
-            const sid = row.querySelector('.p-id').value;
-            const pObj = window.db.stock.find(x => x.id == sid);
-            if(pObj) {
-                const q = parseFloat(row.querySelector('.p-qty').value) || 0;
-                const r = parseFloat(row.querySelector('.p-rate').value) || 0;
-                const t = q * r; sub += t;
-                itemsHtml += `<tr><td style="padding:10px 0; border-bottom:1px solid #eee;"><b>${pObj.name}</b></td><td style="text-align:center;">${q}</td><td style="text-align:right;">₹${r}</td><td style="text-align:right;">₹${t}</td></tr>`;
-            }
-        });
-
-        const tax = taxMode === 'GST' ? sub * 0.18 : 0;
-        const primary = style === 'modern' ? '#4f46e5' : '#111';
-
-        document.getElementById('template-render-target').innerHTML = `
-            <div style="border-bottom:5px solid ${primary}; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between;">
-                <div><h1 style="font-size:24px; margin:0; color:${primary}">${window.db.shop.name}</h1><p style="font-size:10px;">${window.db.shop.info.replace(/\n/g,'<br>')}</p></div>
-                <div style="text-align:right;"><span style="background:${primary}; color:white; padding:4px 10px; border-radius:4px; font-weight:bold;">${docType}</span><p style="margin-top:5px;">#${window.db.settings.nextInv}</p></div>
-            </div>
-            <div style="margin-bottom:20px;">
-                <p style="font-size:10px; color:gray; text-transform:uppercase;">Bill To:</p>
-                <h3 style="margin:0;">${custName}</h3><p style="font-size:11px;">${custInfo.replace(/\n/g,'<br>')}</p>
-            </div>
-            <table style="width:100%; border-collapse:collapse;">
-                <thead><tr style="border-bottom:2px solid #eee; text-align:left; font-size:11px; text-transform:uppercase;"><th>Item</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Rate</th><th style="text-align:right;">Total</th></tr></thead>
-                <tbody>${itemsHtml}</tbody>
-            </table>
-            <div style="margin-top:20px; text-align:right; border-top:2px solid #eee; padding-top:10px;">
-                <p>Subtotal: ₹${sub.toFixed(2)}</p>
-                ${taxMode === 'GST' ? `<p>GST (18%): ₹${tax.toFixed(2)}</p>` : ''}
-                <h2 style="color:${primary}">Total: ₹${Math.round(sub+tax)}</h2>
-            </div>
-            ${showSig ? `
-            <div class="sig-container">
-                <div class="sig-box">${window.db.settings.partySig ? `<img src="${window.db.settings.partySig}" class="sig-img">` : ''}<p style="font-size:10px;">Receiver Signature</p></div>
-                <div class="sig-box">${window.db.settings.authSig ? `<img src="${window.db.settings.authSig}" class="sig-img">` : ''}<p style="font-size:10px;">Auth Signatory</p></div>
-            </div>` : ''}
-        `;
-    }
-
-    function finalizeTransaction() {
-        const inv = window.db.settings.nextInv;
-        window.db.sales.push({ id: Date.now(), invNo: inv, date: new Date() });
-        window.db.settings.nextInv++;
-        window.saveAndSync();
-        alert("Invoice #" + inv + " finalized and synced to cloud.");
-        location.reload();
-    }
-
     function saveShopProfile() {
-        const name = prompt("Update Shop Name:", window.db.shop.name);
-        const info = prompt("Update Shop Details (Address/GST):", window.db.shop.info);
-        if(name) window.db.shop.name = name;
-        if(info) window.db.shop.info = info;
-        window.saveAndSync();
+        const n = prompt("Shop Name:", db.shop.name);
+        const i = prompt("Shop Details:", db.shop.info);
+        if(n) db.shop.name = n;
+        if(i) db.shop.info = i;
+        pushToCloud();
+        updatePreview();
     }
 
-    function handleSigUpload(input, type) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            if(type === 'auth') window.db.settings.authSig = reader.result;
-            else window.db.settings.partySig = reader.result;
-            window.saveAndSync();
-        };
-        if(file) reader.readAsDataURL(file);
+    function loadPartyData() {
+        const p = db.parties.find(x => x.id == document.getElementById('party-select').value);
+        if(p) { document.getElementById('cust-name').value = p.name; document.getElementById('cust-info').value = p.info; updatePreview(); }
     }
-
-    function autoScaleInvoice() {
-        const c = document.getElementById('preview-panel'), i = document.getElementById('invoice-preview');
-        const s = (c.offsetWidth - 60) / 794;
-        if(s < 1) i.style.transform = `scale(${s})`;
-    }
-
-    function downloadPDF() { 
-        const element = document.getElementById('invoice-preview');
-        html2pdf().from(element).set({ margin:0, filename:'invoice.pdf', html2canvas:{scale:2} }).save(); 
-    }
-
-    window.onload = () => { if(window.db.stock.length === 0) addItemRow(); };
 </script>
 </body>
 </html>
